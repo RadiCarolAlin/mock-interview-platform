@@ -1,0 +1,230 @@
+<section class="candidate-form-page">
+
+  <a
+    class="back-link"
+    routerLink="/candidates">
+    ← Back to Candidates
+  </a>
+
+  <div class="page-header">
+
+    <h1>
+      @if (isEditMode) {
+        Edit Candidate
+      } @else {
+        Add Candidate
+      }
+    </h1>
+
+    <p>
+      @if (isEditMode) {
+        Update the candidate's information.
+      } @else {
+        Add a new participant for future interview practice sessions.
+      }
+    </p>
+
+  </div>
+
+  @if (loading) {
+
+    <div class="form-card">
+      Loading candidate...
+    </div>
+
+  } @else {
+
+    <form
+      class="form-card"
+      [formGroup]="candidateForm"
+      (ngSubmit)="submit()">
+
+      <div class="section-header">
+
+        <h2>Candidate Information</h2>
+
+        <p>
+          @if (isEditMode) {
+            Update the participant's information below.
+          } @else {
+            Enter the participant's basic information.
+          }
+        </p>
+
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label for="firstName">
+            First Name <span>*</span>
+          </label>
+
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            placeholder="e.g. John">
+
+          @if (
+            candidateForm.controls.firstName.touched &&
+            candidateForm.controls.firstName.invalid
+            ) {
+            <small class="validation-error">
+              First name is required.
+            </small>
+          }
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="lastName">
+            Last Name <span>*</span>
+          </label>
+
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            placeholder="e.g. Smith">
+
+          @if (
+            candidateForm.controls.lastName.touched &&
+            candidateForm.controls.lastName.invalid
+            ) {
+            <small class="validation-error">
+              Last name is required.
+            </small>
+          }
+
+        </div>
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="email">
+          Email <span>*</span>
+        </label>
+
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="e.g. john.smith@email.com">
+
+        @if (isEditMode) {
+          <small class="field-hint">
+            Email cannot be changed after the candidate is created.
+          </small>
+        }
+
+        @if (
+          candidateForm.controls.email.touched &&
+          candidateForm.controls.email.hasError('required')
+          ) {
+          <small class="validation-error">
+            Email is required.
+          </small>
+        }
+
+        @if (
+          candidateForm.controls.email.touched &&
+          candidateForm.controls.email.hasError('email')
+          ) {
+          <small class="validation-error">
+            Enter a valid email address.
+          </small>
+        }
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="targetRole">
+          Target Role
+        </label>
+
+        <input
+          id="targetRole"
+          type="text"
+          formControlName="targetRole"
+          placeholder="e.g. Senior Backend Developer">
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="experienceLevel">
+          Experience Level
+        </label>
+
+        <select
+          id="experienceLevel"
+          formControlName="experienceLevel">
+
+          @for (
+              level of experienceLevels;
+            track level.value
+            ) {
+            <option [value]="level.value">
+              {{ level.label }}
+            </option>
+          }
+
+        </select>
+
+      </div>
+
+      @if (submitError) {
+
+        <div class="submit-error">
+          {{ submitError }}
+        </div>
+
+      }
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="submitting"
+          (click)="cancel()">
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="submitting">
+
+          @if (submitting) {
+
+            @if (isEditMode) {
+              Saving...
+            } @else {
+              Adding...
+            }
+
+          } @else {
+
+            @if (isEditMode) {
+              Save Changes
+            } @else {
+              Add Candidate
+            }
+
+          }
+
+        </button>
+
+      </div>
+
+    </form>
+
+  }
+
+</section>

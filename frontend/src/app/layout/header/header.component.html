@@ -1,0 +1,47 @@
+<header class="header">
+
+  <div class="header-context">
+    Interview Practice
+  </div>
+
+  <div class="header-actions">
+
+    @if (authService.currentUser(); as user) {
+
+      <div class="user">
+
+        <div class="user-info">
+
+          <strong>
+            {{ user.firstName }}
+            {{ user.lastName }}
+          </strong>
+
+          <span>
+            @if (user.role === 'Interviewer') {
+              Technical Interviewer
+            } @else {
+              Candidate
+            }
+          </span>
+
+        </div>
+
+        <div class="avatar">
+          {{ getInitials() }}
+        </div>
+
+      </div>
+
+      <button
+        type="button"
+        class="logout-button"
+        (click)="logout()">
+        Logout
+      </button>
+
+    }
+
+  </div>
+
+</header>

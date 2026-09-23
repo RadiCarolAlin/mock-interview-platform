@@ -1,0 +1,159 @@
+<section class="my-interviews-page">
+
+  <div class="page-header">
+    <div>
+      <h1>My Interviews</h1>
+      <p>
+        Review your upcoming and completed
+        mock interview sessions.
+      </p>
+    </div>
+  </div>
+
+  @if (loading) {
+
+    <div class="table-card">
+      <div style="padding: 20px;">
+        Loading your interviews...
+      </div>
+    </div>
+
+  } @else if (error) {
+
+    <div class="table-card">
+      <div style="padding: 20px;">
+        Unable to load your interviews.
+      </div>
+    </div>
+
+  } @else {
+
+    <div class="summary">
+
+      <div class="summary-card">
+        <span>Total Sessions</span>
+        <strong>{{ interviews.length }}</strong>
+      </div>
+
+      <div class="summary-card">
+        <span>Completed</span>
+        <strong>{{ completedCount }}</strong>
+      </div>
+
+      <div class="summary-card">
+        <span>Upcoming</span>
+        <strong>{{ upcomingCount }}</strong>
+      </div>
+
+    </div>
+
+    <div class="table-card">
+
+      <table>
+
+        <thead>
+        <tr>
+          <th>INTERVIEW</th>
+          <th>DATE & TIME</th>
+          <th>TYPE</th>
+          <th>STATUS</th>
+          <th>SCORE</th>
+          <th class="actions-column">ACTIONS</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+          @for (interview of interviews; track interview.id) {
+
+            <tr>
+
+              <td>
+                <strong>
+                  {{ interview.title }}
+                </strong>
+              </td>
+
+              <td>
+                <div class="date-cell">
+
+                  <span>
+                    {{ formatDate(interview.scheduledAt) }}
+                  </span>
+
+                  <small>
+                    {{ formatTime(interview.scheduledAt) }}
+                  </small>
+
+                </div>
+              </td>
+
+              <td>
+                {{ interview.type }}
+              </td>
+
+              <td>
+
+                <span
+                  class="status"
+                  [class.scheduled]="interview.status === 'Scheduled'"
+                  [class.completed]="interview.status === 'Completed'"
+                  [class.in-progress]="interview.status === 'In Progress'">
+
+                  {{ interview.status }}
+
+                </span>
+
+              </td>
+
+              <td>
+
+                @if (interview.score !== null) {
+
+                  <strong class="score">
+                    {{ interview.score }}/10
+                  </strong>
+
+                } @else {
+
+                  <span class="not-available">
+                    —
+                  </span>
+
+                }
+
+              </td>
+
+              <td class="actions-column">
+
+                <button
+                  class="view-button"
+                  (click)="viewInterview(interview.id)">
+
+                  View
+
+                </button>
+
+              </td>
+
+            </tr>
+
+          } @empty {
+
+            <tr>
+              <td colspan="6">
+                No interviews found.
+              </td>
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  }
+
+</section>

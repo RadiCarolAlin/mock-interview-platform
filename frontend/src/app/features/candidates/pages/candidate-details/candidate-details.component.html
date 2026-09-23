@@ -1,0 +1,171 @@
+<section class="candidate-details-page">
+
+  <button
+    type="button"
+    class="back-button"
+    (click)="back()">
+    ← Back to Candidates
+  </button>
+
+  @if (loading) {
+
+    <div class="history-card">
+      <div class="empty-state">
+        Loading candidate...
+      </div>
+    </div>
+
+  } @else if (error || !candidate) {
+
+    <div class="history-card">
+      <div class="empty-state">
+        Candidate could not be loaded.
+      </div>
+    </div>
+
+  } @else {
+
+    <div class="candidate-header">
+
+      <div>
+
+        <h1>
+          {{ candidate.firstName }} {{ candidate.lastName }}
+        </h1>
+
+        <div class="candidate-meta">
+
+          <span>
+            {{ getExperienceLevel(candidate.experienceLevel) }}
+          </span>
+
+          <span>•</span>
+
+          <span>
+            {{ candidate.targetRole || 'No target role' }}
+          </span>
+
+        </div>
+
+        <p class="email">
+          {{ candidate.email }}
+        </p>
+
+      </div>
+
+      <button
+        type="button"
+        class="secondary-button"
+        (click)="editCandidate()">
+        Edit Candidate
+      </button>
+
+    </div>
+
+    <div class="history-card">
+
+      <div class="history-header">
+
+        <div>
+          <h2>Interview History</h2>
+
+          <p>
+            Previous and upcoming interview sessions for this candidate.
+          </p>
+        </div>
+
+        <span class="interview-count">
+          {{ interviews.length }}
+          @if (interviews.length === 1) {
+            interview
+          } @else {
+            interviews
+          }
+        </span>
+
+      </div>
+
+      <div class="table-container">
+
+        <table>
+
+          <thead>
+          <tr>
+            <th>Date</th>
+            <th>Interview</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th class="actions-column">Actions</th>
+          </tr>
+          </thead>
+
+          <tbody>
+
+            @for (interview of interviews; track interview.id) {
+
+              <tr>
+
+                <td>
+                  {{ formatDate(interview.scheduledAt) }}
+                </td>
+
+                <td>
+                  <strong>
+                    {{ interview.title }}
+                  </strong>
+                </td>
+
+                <td>
+                  {{ getInterviewType(interview.type) }}
+                </td>
+
+                <td>
+
+                  <span
+                    class="status"
+                    [class.scheduled]="interview.status === 1"
+                    [class.in-progress]="interview.status === 2"
+                    [class.completed]="interview.status === 3">
+
+                    {{ getInterviewStatus(interview.status) }}
+
+                  </span>
+
+                </td>
+
+                <td class="actions">
+
+                  <button
+                    type="button"
+                    class="action-button"
+                    (click)="viewInterview(interview.id)">
+                    View
+                  </button>
+
+                </td>
+
+              </tr>
+
+            } @empty {
+
+              <tr>
+                <td
+                  colspan="5"
+                  class="empty-state">
+                  No interview history available for this candidate.
+                </td>
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+
+  }
+
+</section>

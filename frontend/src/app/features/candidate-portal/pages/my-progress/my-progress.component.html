@@ -1,0 +1,283 @@
+<section class="progress-page">
+
+  <div class="page-header">
+
+    <div>
+      <h1>My Progress</h1>
+
+      <p>
+        Track your performance and improvement
+        across mock interview sessions.
+      </p>
+    </div>
+
+  </div>
+
+  @if (loading) {
+
+    <div class="card">
+      Loading your progress...
+    </div>
+
+  } @else if (error) {
+
+    <div class="card">
+      Unable to load your progress.
+    </div>
+
+  } @else {
+
+    <div class="stats-grid">
+
+      <div class="stat-card">
+
+        <span>Completed Sessions</span>
+
+        <strong>
+          {{ summary.completedSessions }}
+        </strong>
+
+        <small>
+          Total mock interviews completed
+        </small>
+
+      </div>
+
+      <div class="stat-card">
+
+        <span>Average Score</span>
+
+        <strong>
+          {{ summary.averageScore }}/10
+        </strong>
+
+        <small>
+          Across all completed sessions
+        </small>
+
+      </div>
+
+      <div class="stat-card">
+
+        <span>Latest Score</span>
+
+        <strong>
+          {{ summary.latestScore }}/10
+        </strong>
+
+        <small>
+          Your most recent performance
+        </small>
+
+      </div>
+
+      <div class="stat-card">
+
+        <span>Overall Improvement</span>
+
+        <strong
+          class="improvement">
+
+          @if (summary.improvement > 0) {
+            +{{ summary.improvement }}
+          } @else {
+            {{ summary.improvement }}
+          }
+
+        </strong>
+
+        <small>
+          Compared with your first session
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="card-header">
+
+        <div>
+          <h2>Performance Trend</h2>
+
+          <p>
+            Your interview scores over time.
+          </p>
+        </div>
+
+      </div>
+
+      @if (sessions.length > 0) {
+
+        <div class="chart">
+
+          <div class="chart-scale">
+
+            <span>10</span>
+            <span>8</span>
+            <span>6</span>
+            <span>4</span>
+            <span>2</span>
+            <span>0</span>
+
+          </div>
+
+          <div class="chart-content">
+
+            @for (
+                session of sessions;
+              track session.id;
+              let index = $index
+              ) {
+
+              <div class="chart-column">
+
+                <div class="bar-area">
+
+                  <div
+                    class="bar"
+                    [style.height.%]="session.score * 10">
+
+                    <span class="bar-score">
+                      {{ session.score }}
+                    </span>
+
+                  </div>
+
+                </div>
+
+                <div class="chart-label">
+                  Session {{ index + 1 }}
+                </div>
+
+                <div class="chart-date">
+                  {{ formatDate(session.scheduledAt) }}
+                </div>
+
+              </div>
+
+            }
+
+          </div>
+
+        </div>
+
+      } @else {
+
+        <p>
+          No completed interviews are available yet.
+        </p>
+
+      }
+
+    </div>
+
+
+    <div
+      class="card history-card"
+      style="margin-top: 20px;">
+
+      <div class="card-header">
+
+        <div>
+
+          <h2>Performance History</h2>
+
+          <p>
+            Your completed mock interview sessions.
+          </p>
+
+        </div>
+
+      </div>
+
+      <table>
+
+        <thead>
+
+        <tr>
+          <th>INTERVIEW</th>
+          <th>DATE</th>
+          <th>SCORE</th>
+          <th>OUTCOME</th>
+          <th class="actions-column">
+            ACTIONS
+          </th>
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+          @for (session of sessions; track session.id) {
+
+            <tr>
+
+              <td>
+                <strong>
+                  {{ session.title }}
+                </strong>
+              </td>
+
+              <td>
+                {{ formatDate(session.scheduledAt) }}
+              </td>
+
+              <td>
+
+                <strong class="score">
+                  {{ session.score }}/10
+                </strong>
+
+              </td>
+
+              <td>
+
+                <span
+                  class="outcome"
+                  [class.ready]="session.outcome === 3"
+                  [class.progress]="session.outcome === 2">
+
+                  {{ getOutcomeLabel(session.outcome) }}
+
+                </span>
+
+              </td>
+
+              <td class="actions-column">
+
+                <button
+                  class="view-button"
+                  (click)="viewInterview(session.id)">
+
+                  View
+
+                </button>
+
+              </td>
+
+            </tr>
+
+          } @empty {
+
+            <tr>
+
+              <td colspan="5">
+                No completed interviews found.
+              </td>
+
+            </tr>
+
+          }
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  }
+
+</section>

@@ -1,0 +1,223 @@
+<section class="reports-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <h1>
+        Reports & Insights
+      </h1>
+
+      <p>
+        Review mock interview activity
+        and candidate practice progress.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  @if (loading) {
+
+    <div class="card">
+
+      <div class="card-header">
+        <h2>Loading reports...</h2>
+      </div>
+
+    </div>
+
+  } @else if (error) {
+
+    <div class="card">
+
+      <div class="card-header">
+
+        <h2>
+          Unable to load reports
+        </h2>
+
+        <p>
+          Report data could not be loaded.
+        </p>
+
+      </div>
+
+    </div>
+
+  } @else {
+
+    <div class="stats-grid">
+
+      <div class="stat-card">
+
+        <span>
+          Total Interviews
+        </span>
+
+        <strong>
+          {{ stats.totalInterviews }}
+        </strong>
+
+        <small>
+          All mock interview sessions
+        </small>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span>
+          Completed
+        </span>
+
+        <strong>
+          {{ stats.completedInterviews }}
+        </strong>
+
+        <small>
+          Completed interview sessions
+        </small>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span>
+          Average Score
+        </span>
+
+        <strong>
+          {{ getAverageScore() }}/10
+        </strong>
+
+        <small>
+          Across scored interviews
+        </small>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span>
+          Candidates
+        </span>
+
+        <strong>
+          {{ stats.totalCandidates }}
+        </strong>
+
+        <small>
+          Participants tracked
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="analytics-grid">
+
+      <div class="card">
+
+        <div class="card-header">
+
+          <h2>
+            Interview Status
+          </h2>
+
+          <p>
+            Current interview activity.
+          </p>
+
+        </div>
+
+        <div class="report-summary">
+
+          <div class="summary-item">
+
+            <span class="label">
+              Total Interviews
+            </span>
+
+            <strong>
+              {{ stats.totalInterviews }}
+            </strong>
+
+          </div>
+
+
+          <div class="summary-item">
+
+            <span class="label">
+              Completed
+            </span>
+
+            <strong>
+              {{ stats.completedInterviews }}
+            </strong>
+
+          </div>
+
+
+          <div class="summary-item">
+
+            <span class="label">
+              Scheduled
+            </span>
+
+            <strong>
+              {{ stats.scheduledInterviews }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="card-header">
+
+          <h2>
+            Candidate Progress
+          </h2>
+
+          <p>
+            Review individual candidate
+            interview history and progress.
+          </p>
+
+        </div>
+
+        <div class="candidate-progress-action">
+
+          <p>
+            Candidate progress reports are
+            available for each participant.
+          </p>
+
+          <button
+            type="button"
+            class="view-button"
+            (click)="viewCandidates()">
+
+            View Candidates
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  }
+
+</section>

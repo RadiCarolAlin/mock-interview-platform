@@ -1,0 +1,75 @@
+<aside class="sidebar">
+
+  <div class="logo">
+    <div class="logo-icon">
+      MI
+    </div>
+
+    <div>
+      <div class="logo-title">
+        Mock Interview
+      </div>
+
+      <div class="logo-subtitle">
+        Platform
+      </div>
+    </div>
+  </div>
+
+  <nav class="navigation">
+
+    @if (authService.isInterviewer()) {
+
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active">
+        Dashboard
+      </a>
+
+      <a
+        routerLink="/interviews"
+        routerLinkActive="active">
+        Interviews
+      </a>
+
+      <a
+        routerLink="/candidates"
+        routerLinkActive="active">
+        Candidates
+      </a>
+
+      <a
+        routerLink="/reports"
+        routerLinkActive="active">
+        Reports
+      </a>
+
+    } @else {
+
+      <a
+        routerLink="/my-dashboard"
+        routerLinkActive="active">
+        My Dashboard
+      </a>
+
+      <a
+        routerLink="/my-interviews"
+        routerLinkActive="active">
+        My Interviews
+      </a>
+
+      <a
+        routerLink="/my-progress"
+        routerLinkActive="active">
+        My Progress
+      </a>
+
+    }
+
+  </nav>
+
+  <div class="sidebar-footer">
+    Technical Interview Practice
+  </div>
+
+</aside>

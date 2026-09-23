@@ -1,0 +1,184 @@
+.my-interviews-page {
+  padding: 32px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0;
+    font-size: 26px;
+    color: #111827;
+  }
+
+  p {
+    margin: 6px 0 0;
+    font-size: 14px;
+    color: #64748b;
+  }
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 220px);
+  gap: 16px;
+
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  padding: 18px 20px;
+
+  display: flex;
+  flex-direction: column;
+
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+
+  span {
+    font-size: 12px;
+    color: #64748b;
+  }
+
+  strong {
+    margin-top: 7px;
+
+    font-size: 24px;
+    color: #111827;
+  }
+}
+
+.table-card {
+  overflow: hidden;
+
+  background: white;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+table {
+  width: 100%;
+
+  border-collapse: collapse;
+}
+
+thead {
+  background: #f8fafc;
+}
+
+th {
+  padding: 14px 16px;
+
+  text-align: left;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  color: #64748b;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+td {
+  padding: 16px;
+
+  font-size: 13px;
+  color: #475569;
+
+  border-bottom: 1px solid #f1f5f9;
+
+  strong {
+    color: #1f2937;
+  }
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: #f8fafc;
+}
+
+.date-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  small {
+    color: #94a3b8;
+  }
+}
+
+.status {
+  display: inline-flex;
+
+  padding: 4px 9px;
+
+  border-radius: 20px;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  &.scheduled {
+    background: #dbeafe;
+    color: #1d4ed8;
+  }
+
+  &.completed {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  &.in-progress {
+    background: #fef3c7;
+    color: #92400e;
+  }
+}
+
+.score {
+  color: #2563eb !important;
+}
+
+.not-available {
+  color: #94a3b8;
+}
+
+.actions-column {
+  text-align: right;
+}
+
+.view-button {
+  padding: 6px 11px;
+
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+
+  color: #374151;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #9ca3af;
+  }
+}
+
+@media (max-width: 1100px) {
+  .summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .table-card {
+    overflow-x: auto;
+  }
+
+  table {
+    min-width: 900px;
+  }
+}

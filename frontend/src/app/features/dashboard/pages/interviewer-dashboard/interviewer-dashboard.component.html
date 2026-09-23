@@ -1,0 +1,449 @@
+<section class="dashboard-page">
+
+  <div class="page-header">
+
+    <div>
+
+      <h1>Dashboard</h1>
+
+      <p>
+        Here's your upcoming mock interview
+        schedule and recent activity.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      class="primary-button"
+      (click)="createInterview()">
+
+      + Create Interview
+
+    </button>
+
+  </div>
+
+
+  @if (loading) {
+
+    <div class="card">
+
+      <div class="card-header">
+        <h2>Loading dashboard...</h2>
+      </div>
+
+    </div>
+
+  } @else if (error) {
+
+    <div class="card">
+
+      <div class="card-header">
+
+        <h2>
+          Unable to load dashboard
+        </h2>
+
+        <p>
+          Dashboard data could not be loaded.
+        </p>
+
+      </div>
+
+    </div>
+
+  } @else {
+
+    <div class="stats-grid">
+
+      <div class="stat-card">
+
+        <span>
+          Today's Interviews
+        </span>
+
+        <strong>
+          {{ stats.todayInterviews }}
+        </strong>
+
+        <small>
+          Scheduled for today
+        </small>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span>
+          Tomorrow
+        </span>
+
+        <strong>
+          {{ stats.tomorrowInterviews }}
+        </strong>
+
+        <small>
+          Upcoming tomorrow
+        </small>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span>
+          Completed This Week
+        </span>
+
+        <strong>
+          {{ stats.completedThisWeek }}
+        </strong>
+
+        <small>
+          Mock interviews completed
+        </small>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <span>
+          Candidates
+        </span>
+
+        <strong>
+          {{ stats.candidates }}
+        </strong>
+
+        <small>
+          Active participants
+        </small>
+
+      </div>
+
+    </div>
+
+
+    <div class="schedule-grid">
+
+      <div class="card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h2>
+              Today's Interviews
+            </h2>
+
+            <p>
+              Your interview schedule for today.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="interview-list">
+
+          @for (
+              interview of todayInterviews;
+            track interview.id
+            ) {
+
+            <div class="interview-item">
+
+              <div class="time">
+                {{ interview.time }}
+              </div>
+
+
+              <div class="interview-info">
+
+                <strong>
+                  {{ interview.candidateName }}
+                </strong>
+
+                <span>
+                  {{ interview.title }}
+                </span>
+
+              </div>
+
+
+              <span
+                class="status"
+                [class.scheduled]="interview.status === 1"
+                [class.in-progress]="interview.status === 2">
+
+                {{
+                  getStatusLabel(
+                    interview.status
+                  )
+                }}
+
+              </span>
+
+
+              <button
+                type="button"
+                class="view-button"
+                (click)="viewInterview(interview.id)">
+
+                View
+
+              </button>
+
+            </div>
+
+          } @empty {
+
+            <div class="empty-state">
+
+              No interviews scheduled
+              for today.
+
+            </div>
+
+          }
+
+        </div>
+
+      </div>
+
+
+      <div class="card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h2>
+              Tomorrow
+            </h2>
+
+            <p>
+              Your interview schedule for tomorrow.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="interview-list">
+
+          @for (
+              interview of tomorrowInterviews;
+            track interview.id
+            ) {
+
+            <div class="interview-item">
+
+              <div class="time">
+                {{ interview.time }}
+              </div>
+
+
+              <div class="interview-info">
+
+                <strong>
+                  {{ interview.candidateName }}
+                </strong>
+
+                <span>
+                  {{ interview.title }}
+                </span>
+
+              </div>
+
+
+              <span
+                class="status"
+                [class.scheduled]="interview.status === 1"
+                [class.in-progress]="interview.status === 2">
+
+                {{
+                  getStatusLabel(
+                    interview.status
+                  )
+                }}
+
+              </span>
+
+
+              <button
+                type="button"
+                class="view-button"
+                (click)="viewInterview(interview.id)">
+
+                View
+
+              </button>
+
+            </div>
+
+          } @empty {
+
+            <div class="empty-state">
+
+              No interviews scheduled
+              for tomorrow.
+
+            </div>
+
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="card recent-card">
+
+      <div class="card-header">
+
+        <div>
+
+          <h2>
+            Recent Activity
+          </h2>
+
+          <p>
+            Recently completed mock
+            interview sessions.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      @if (recentInterviews.length > 0) {
+
+        <table>
+
+          <thead>
+
+          <tr>
+            <th>CANDIDATE</th>
+            <th>INTERVIEW</th>
+            <th>DATE</th>
+            <th>SCORE</th>
+            <th>OUTCOME</th>
+            <th class="actions-column">
+              ACTIONS
+            </th>
+          </tr>
+
+          </thead>
+
+
+          <tbody>
+
+            @for (
+                interview of recentInterviews;
+              track interview.id
+              ) {
+
+              <tr>
+
+                <td>
+
+                  <strong>
+                    {{ interview.candidateName }}
+                  </strong>
+
+                </td>
+
+
+                <td>
+                  {{ interview.title }}
+                </td>
+
+
+                <td>
+                  {{ getDate(interview.date) }}
+                </td>
+
+
+                <td>
+
+                  @if (interview.score !== null) {
+
+                    <strong class="score">
+                      {{ interview.score }}/10
+                    </strong>
+
+                  } @else {
+
+                    <span class="muted">
+                      —
+                    </span>
+
+                  }
+
+                </td>
+
+
+                <td>
+
+                  <span
+                    class="outcome"
+                    [class.practice]="interview.outcome === 1"
+                    [class.progress]="interview.outcome === 2"
+                    [class.ready]="interview.outcome === 3"
+                    [class.strong]="interview.outcome === 4"
+                    [class.no-feedback]="interview.outcome === null">
+
+                    {{
+                      getOutcomeLabel(
+                        interview.outcome
+                      )
+                    }}
+
+                  </span>
+
+                </td>
+
+
+                <td class="actions-column">
+
+                  <button
+                    type="button"
+                    class="view-button"
+                    (click)="viewInterview(interview.id)">
+
+                    View
+
+                  </button>
+
+                </td>
+
+              </tr>
+
+            }
+
+          </tbody>
+
+        </table>
+
+      } @else {
+
+        <div class="empty-state">
+          No completed interviews yet.
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+</section>

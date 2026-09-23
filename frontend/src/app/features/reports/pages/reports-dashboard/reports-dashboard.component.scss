@@ -1,0 +1,257 @@
+.reports-page {
+  width: 100%;
+}
+
+.page-header {
+  margin-bottom: 26px;
+
+  h1 {
+    margin: 0;
+    color: #111827;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 7px 0 0;
+    color: #64748b;
+    font-size: 14px;
+  }
+}
+
+/* =========================
+   TOP STATS
+   ========================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  min-height: 105px;
+  padding: 20px 22px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 12px rgba(15, 23, 42, 0.04);
+
+  span {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  strong {
+    margin: 9px 0 6px;
+
+    color: #111827;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  small {
+    color: #94a3b8;
+    font-size: 12px;
+  }
+}
+
+/* =========================
+   LOWER CARDS
+   ========================= */
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(320px, 0.8fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.card {
+  background: #ffffff;
+
+  border: 1px solid #dbe2ea;
+  border-radius: 12px;
+
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 12px rgba(15, 23, 42, 0.04);
+
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 20px 22px;
+
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+
+  h2 {
+    margin: 0;
+
+    color: #111827;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 5px 0 0;
+
+    color: #64748b;
+    font-size: 13px;
+  }
+}
+
+/* =========================
+   INTERVIEW STATUS
+   ========================= */
+
+.report-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 14px;
+  padding: 20px 22px 22px;
+}
+
+.summary-item {
+  min-height: 78px;
+  padding: 16px 18px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 9px;
+
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 9px;
+
+  .label {
+    color: #64748b;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  strong {
+    color: #111827;
+
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+  }
+}
+
+/* Give status blocks a little visual identity */
+
+.summary-item:nth-child(1) {
+  border-left: 3px solid #2563eb;
+}
+
+.summary-item:nth-child(2) {
+  border-left: 3px solid #16a34a;
+}
+
+.summary-item:nth-child(3) {
+  border-left: 3px solid #d97706;
+}
+
+/* =========================
+   CANDIDATE PROGRESS
+   ========================= */
+
+.candidate-progress-action {
+  min-height: 118px;
+
+  padding: 22px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+
+  p {
+    margin: 0 0 18px;
+
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+}
+
+.view-button {
+  padding: 9px 15px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  border: 1px solid #2563eb;
+  border-radius: 7px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+
+  &:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+  }
+}
+
+/* =========================
+   LOADING / ERROR
+   ========================= */
+
+.card > .card-header:only-child {
+  border-bottom: 0;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 700px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .report-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    h1 {
+      font-size: 24px;
+    }
+  }
+}

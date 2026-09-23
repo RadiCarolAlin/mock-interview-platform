@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: interview-practice-db
+
+    environment:
+      POSTGRES_DB: interview_practice
+      POSTGRES_USER: interview_user
+      POSTGRES_PASSWORD: interview_password
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - interview_postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U interview_user -d interview_practice"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: InterviewPractice.Api/Dockerfile
+
+    container_name: interview-practice-api
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=interview_practice;Username=interview_user;Password=interview_password"
+
+      Okta__Authority: "https://integrator-2251777.okta.com/oauth2/default"
+      Okta__ClientId: "0oa17xk6m0iFgRjLX698"
+      Okta__ClientSecret: "${OKTA_CLIENT_SECRET}"
+
+    ports:
+      - "5207:8080"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: interview-practice-frontend
+
+    ports:
+      - "4200:80"
+
+    depends_on:
+      - api
+
+volumes:
+  interview_postgres_data:
