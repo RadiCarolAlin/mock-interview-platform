@@ -1,6 +1,13 @@
+:host {
+  display: block;
+  height: 100vh;
+  height: 100dvh;
+}
+
 .app-layout {
   display: flex;
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
   background: #f5f7fa;
 }
 
@@ -9,10 +16,19 @@
   flex: 1;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+
+app-header {
+  flex: 0 0 auto;
 }
 
 .page-content {
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 32px;
 }
 

@@ -100,6 +100,7 @@
 
 .chart {
   height: 280px;
+  overflow-x: auto;
 
   display: flex;
 
@@ -238,7 +239,7 @@
 
 .history-card {
   padding: 0;
-  overflow: hidden;
+  overflow-x: auto;
 
   .card-header {
     padding: 22px;

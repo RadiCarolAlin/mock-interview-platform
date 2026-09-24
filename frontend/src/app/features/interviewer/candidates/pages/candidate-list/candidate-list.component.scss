@@ -42,10 +42,12 @@
 }
 
 .toolbar {
+  flex-wrap: wrap;
   margin-bottom: 20px;
 
   input {
     width: 320px;
+    max-width: 100%;
     height: 42px;
     padding: 0 14px;
 
@@ -64,7 +66,7 @@
 }
 
 .table-card {
-  overflow: hidden;
+  overflow-x: auto;
 
   background: white;
 
@@ -152,6 +154,7 @@ tbody tr:hover {
   color: #94a3b8;
 }
 .toolbar {
+  flex-wrap: wrap;
   display: flex;
   align-items: center;
   gap: 10px;
