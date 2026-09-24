@@ -13,3 +13,4 @@ export interface Interview {
   notes: string | null;
   status: number;
 }
+

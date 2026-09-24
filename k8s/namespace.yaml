@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mock-interview
+  labels:
+    app.kubernetes.io/name: mock-interview-platform
+    app.kubernetes.io/part-of: mock-interview-platform

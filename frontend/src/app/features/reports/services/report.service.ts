@@ -34,7 +34,7 @@ export interface CandidateProgress {
 export class ReportService {
 
   private readonly apiUrl =
-    'http://localhost:5207/api/Reports';
+    '/api/Reports';
 
   constructor(
     private readonly http: HttpClient
@@ -60,3 +60,4 @@ export class ReportService {
     );
   }
 }
+

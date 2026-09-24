@@ -16,3 +16,4 @@ export class SidebarComponent {
   constructor(public authService: AuthService) {
   }
 }
+

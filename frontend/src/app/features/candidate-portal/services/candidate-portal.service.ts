@@ -59,7 +59,7 @@ export interface CandidateInterviewDetails {
 export class CandidatePortalService {
 
   private readonly apiUrl =
-    'http://localhost:5207/api/candidate/me';
+    '/api/candidate/me';
 
   constructor(
     private readonly http: HttpClient
@@ -94,3 +94,4 @@ export class CandidatePortalService {
     );
   }
 }
+

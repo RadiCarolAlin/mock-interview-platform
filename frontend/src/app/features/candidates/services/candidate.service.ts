@@ -33,7 +33,7 @@ export interface UpdateCandidateRequest {
 export class CandidateService {
 
   private readonly apiUrl =
-    'http://localhost:5207/api/Candidates';
+    '/api/Candidates';
 
   constructor(
     private readonly http: HttpClient
@@ -100,3 +100,4 @@ export class CandidateService {
     );
   }
 }
+

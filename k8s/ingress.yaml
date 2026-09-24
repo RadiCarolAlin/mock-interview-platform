@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mock-interview-ingress
+  namespace: mock-interview
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    kubernetes.io/ingress.global-static-ip-name: "mock-interview-ip"
+    networking.gke.io/managed-certificates: "mock-interview-certificate"
+spec:
+  rules:
+    - host: mock-interview-carol.duckdns.org
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: mock-interview-api
+                port:
+                  number: 80
+
+          - path: /signin-oidc
+            pathType: Prefix
+            backend:
+              service:
+                name: mock-interview-api
+                port:
+                  number: 80
+
+          - path: /signout-callback-oidc
+            pathType: Prefix
+            backend:
+              service:
+                name: mock-interview-api
+                port:
+                  number: 80
+
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mock-interview-frontend
+                port:
+                  number: 80

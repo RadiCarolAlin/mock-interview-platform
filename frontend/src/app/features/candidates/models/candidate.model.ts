@@ -13,3 +13,4 @@ export interface Candidate {
   targetRole?: string;
   experienceLevel?: ExperienceLevel;
 }
+

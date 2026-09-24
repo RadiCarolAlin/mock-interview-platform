@@ -27,7 +27,7 @@ export interface CreateFeedbackRequest {
 export class FeedbackService {
 
   private readonly apiUrl =
-    'http://localhost:5207/api/Feedback';
+    '/api/Feedback';
 
   constructor(
     private readonly http: HttpClient
@@ -56,3 +56,4 @@ export class FeedbackService {
     );
   }
 }
+

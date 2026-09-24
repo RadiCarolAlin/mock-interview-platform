@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mock-interview-frontend
+  namespace: mock-interview
+  labels:
+    app: mock-interview-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mock-interview-frontend
+  template:
+    metadata:
+      labels:
+        app: mock-interview-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: europe-central2-docker.pkg.dev/mock-interview-platform-carol/mock-interview-repo/mock-interview-frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"

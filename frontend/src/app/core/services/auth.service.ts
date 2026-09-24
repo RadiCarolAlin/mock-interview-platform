@@ -21,7 +21,7 @@ interface AuthMeResponse {
 })
 export class AuthService {
 
-  private readonly apiUrl = 'http://localhost:5207/api/auth';
+  private readonly apiUrl = '/api/auth';
 
   currentUser = signal<User | null>(null);
 
@@ -72,3 +72,4 @@ export class AuthService {
     return this.currentUser()?.role === 'Candidate';
   }
 }
+

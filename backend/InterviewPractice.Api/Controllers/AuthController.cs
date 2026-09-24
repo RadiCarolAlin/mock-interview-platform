@@ -13,10 +13,16 @@ namespace InterviewPractice.Api.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly ICurrentUserService _currentUserService;
+    private readonly string _frontendBaseUrl;
 
-    public AuthController(ICurrentUserService currentUserService)
+    public AuthController(
+        ICurrentUserService currentUserService,
+        IConfiguration configuration)
     {
         _currentUserService = currentUserService;
+
+        _frontendBaseUrl = configuration["Frontend:BaseUrl"]
+            ?? "http://localhost:4200";
     }
 
     [AllowAnonymous]
@@ -25,7 +31,7 @@ public class AuthController : ControllerBase
     {
         var properties = new AuthenticationProperties
         {
-            RedirectUri = "http://localhost:4200"
+            RedirectUri = _frontendBaseUrl
         };
 
         return Challenge(
@@ -38,7 +44,7 @@ public class AuthController : ControllerBase
     {
         var properties = new AuthenticationProperties
         {
-            RedirectUri = "http://localhost:4200"
+            RedirectUri = _frontendBaseUrl
         };
 
         return SignOut(

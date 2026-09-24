@@ -29,7 +29,7 @@ export interface UpdateInterviewRequest {
 })
 export class InterviewService {
 
-  private readonly apiUrl = 'http://localhost:5207/api/Interviews';
+  private readonly apiUrl = '/api/Interviews';
 
   constructor(private readonly http: HttpClient) {}
 
@@ -76,3 +76,4 @@ export class InterviewService {
     );
   }
 }
+

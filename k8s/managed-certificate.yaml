@@ -1,0 +1,8 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: mock-interview-certificate
+  namespace: mock-interview
+spec:
+  domains:
+    - mock-interview-carol.duckdns.org

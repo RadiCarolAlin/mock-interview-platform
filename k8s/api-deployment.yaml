@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mock-interview-api
+  namespace: mock-interview
+  labels:
+    app: mock-interview-api
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: mock-interview-api
+
+  template:
+    metadata:
+      labels:
+        app: mock-interview-api
+
+    spec:
+      serviceAccountName: mock-interview-api
+
+      containers:
+        # -------------------------------------------------
+        # .NET API
+        # -------------------------------------------------
+        - name: api
+          image: europe-central2-docker.pkg.dev/mock-interview-platform-carol/mock-interview-repo/mock-interview-api:latest
+          imagePullPolicy: Always
+
+          ports:
+            - containerPort: 8080
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+              
+            - name: Frontend__BaseUrl
+              value: "https://mock-interview-carol.duckdns.org"  
+
+            - name: ASPNETCORE_URLS
+              value: "http://+:8080"
+
+            # Select Google Secret Manager instead of
+            # local environment secrets.
+            - name: Secrets__Provider
+              value: "GoogleSecretManager"
+
+            - name: GoogleCloud__ProjectId
+              value: "mock-interview-platform-carol"
+
+            # Database configuration.
+            # Password is loaded by the API from Secret Manager.
+            - name: Database__Host
+              value: "127.0.0.1"
+
+            - name: Database__Port
+              value: "5432"
+
+            - name: Database__Name
+              value: "interview_practice"
+
+            - name: Database__User
+              value: "interview_user"
+
+            # Non-secret OIDC configuration.
+            - name: Okta__Authority
+              value: "https://integrator-2251777.okta.com/oauth2/default"
+
+            - name: Okta__ClientId
+              value: "0oa17xk6m0iFgRjLX698"
+
+            # Populate Cloud SQL with our assessment demo data.
+            - name: SeedDemoData
+              value: "true"
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+        # -------------------------------------------------
+        # Cloud SQL Auth Proxy sidecar
+        # -------------------------------------------------
+        - name: cloud-sql-proxy
+          image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2.18.2
+
+          args:
+            - "--structured-logs"
+            - "--port=5432"
+            - "mock-interview-platform-carol:europe-central2:mock-interview-db"
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"

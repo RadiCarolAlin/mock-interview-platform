@@ -78,3 +78,4 @@ export class ReportsDashboardComponent implements OnInit {
     this.router.navigate(['/candidates']);
   }
 }
+

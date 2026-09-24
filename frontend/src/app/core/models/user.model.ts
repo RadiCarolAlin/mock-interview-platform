@@ -10,3 +10,4 @@ export interface User {
   candidateId: string | null;
   interviewerId: string | null;
 }
+

@@ -1,17 +1,19 @@
+using Google.Cloud.SecretManager.V1;
+using InterviewPractice.Api.Authorization;
+using InterviewPractice.Application.Auth;
 using InterviewPractice.Application.Candidates;
 using InterviewPractice.Application.Common.Interfaces;
 using InterviewPractice.Application.Feedback;
 using InterviewPractice.Application.Interviews;
 using InterviewPractice.Application.Reports;
+using InterviewPractice.Domain.Enums;
 using InterviewPractice.Infrastructure.Persistence;
 using InterviewPractice.Infrastructure.Persistence.Seed;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.EntityFrameworkCore;
-using InterviewPractice.Application.Auth;
-using InterviewPractice.Api.Authorization;
-using InterviewPractice.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +24,84 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// -------------------------------------------------------
+// Secret provider
+// -------------------------------------------------------
+
+var secretProvider =
+    builder.Configuration["Secrets:Provider"] ?? "Environment";
+
+string connectionString;
+string oktaClientSecret;
+
+if (secretProvider.Equals(
+        "GoogleSecretManager",
+        StringComparison.OrdinalIgnoreCase))
+{
+    var googleProjectId =
+        builder.Configuration["GoogleCloud:ProjectId"]
+        ?? throw new InvalidOperationException(
+            "GoogleCloud:ProjectId was not configured.");
+
+    var secretManagerClient =
+        await SecretManagerServiceClient.CreateAsync();
+
+    async Task<string> GetSecretAsync(string secretId)
+    {
+        var secretVersionName = new SecretVersionName(
+            googleProjectId,
+            secretId,
+            "latest");
+
+        var response =
+            await secretManagerClient.AccessSecretVersionAsync(
+                secretVersionName);
+
+        return response.Payload.Data.ToStringUtf8().Trim();
+    }
+
+    var dbPassword = await GetSecretAsync("db-password");
+
+    oktaClientSecret =
+        await GetSecretAsync("okta-client-secret");
+
+    var dbHost =
+        builder.Configuration["Database:Host"] ?? "127.0.0.1";
+
+    var dbPort =
+        builder.Configuration["Database:Port"] ?? "5432";
+
+    var dbName =
+        builder.Configuration["Database:Name"]
+        ?? throw new InvalidOperationException(
+            "Database:Name was not configured.");
+
+    var dbUser =
+        builder.Configuration["Database:User"]
+        ?? throw new InvalidOperationException(
+            "Database:User was not configured.");
+
+    connectionString =
+        $"Host={dbHost};" +
+        $"Port={dbPort};" +
+        $"Database={dbName};" +
+        $"Username={dbUser};" +
+        $"Password={dbPassword}";
+}
+else
+{
+    connectionString =
+        builder.Configuration.GetConnectionString(
+            "DefaultConnection")
+        ?? throw new InvalidOperationException(
+            "Connection string 'DefaultConnection' was not found.");
+
+    oktaClientSecret =
+        builder.Configuration["Okta:ClientSecret"]
+        ?? throw new InvalidOperationException(
+            "Okta:ClientSecret was not configured.");
+}
 
 // -------------------------------------------------------
 // CORS - Angular frontend
@@ -43,16 +123,12 @@ builder.Services.AddCors(options =>
 // Database
 // -------------------------------------------------------
 
-var connectionString = builder.Configuration
-                           .GetConnectionString("DefaultConnection")
-                       ?? throw new InvalidOperationException(
-                           "Connection string 'DefaultConnection' was not found.");
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 builder.Services.AddScoped<IApplicationDbContext>(
-    provider => provider.GetRequiredService<ApplicationDbContext>());
+    provider =>
+        provider.GetRequiredService<ApplicationDbContext>());
 
 // -------------------------------------------------------
 // Application services
@@ -68,17 +144,15 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 // Okta configuration
 // -------------------------------------------------------
 
-var oktaAuthority = builder.Configuration["Okta:Authority"]
-                    ?? throw new InvalidOperationException(
-                        "Okta:Authority was not configured.");
+var oktaAuthority =
+    builder.Configuration["Okta:Authority"]
+    ?? throw new InvalidOperationException(
+        "Okta:Authority was not configured.");
 
-var oktaClientId = builder.Configuration["Okta:ClientId"]
-                   ?? throw new InvalidOperationException(
-                       "Okta:ClientId was not configured.");
-
-var oktaClientSecret = builder.Configuration["Okta:ClientSecret"]
-                       ?? throw new InvalidOperationException(
-                           "Okta:ClientSecret was not configured.");
+var oktaClientId =
+    builder.Configuration["Okta:ClientId"]
+    ?? throw new InvalidOperationException(
+        "Okta:ClientId was not configured.");
 
 // -------------------------------------------------------
 // Authentication - Cookie + OpenID Connect
@@ -90,8 +164,6 @@ builder.Services
         options.DefaultScheme =
             CookieAuthenticationDefaults.AuthenticationScheme;
 
-        // API requests return 401 instead of automatically
-        // redirecting to Okta.
         options.DefaultChallengeScheme =
             CookieAuthenticationDefaults.AuthenticationScheme;
     })
@@ -99,7 +171,8 @@ builder.Services
     {
         options.Cookie.Name = "InterviewPractice.Auth";
         options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SecurePolicy =
+            CookieSecurePolicy.SameAsRequest;
         options.Cookie.SameSite = SameSiteMode.Lax;
 
         options.Events.OnRedirectToLogin = context =>
@@ -179,35 +252,62 @@ builder.Services.AddScoped<
     UserRoleAuthorizationHandler>();
 
 // -------------------------------------------------------
+// Forwarded headers
+// Required when HTTPS terminates at the GKE Ingress.
+// -------------------------------------------------------
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
+
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// -------------------------------------------------------
 // Build
 // -------------------------------------------------------
 
 var app = builder.Build();
 
 // -------------------------------------------------------
-// Development
+// Swagger - development only
 // -------------------------------------------------------
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
 
-    using var scope = app.Services.CreateScope();
+// -------------------------------------------------------
+// Database migrations + optional demo seed
+// -------------------------------------------------------
 
+using (var scope = app.Services.CreateScope())
+{
     var dbContext = scope.ServiceProvider
         .GetRequiredService<ApplicationDbContext>();
 
-    // Apply pending EF Core migrations automatically.
+    // Apply EF Core migrations in both local and cloud environments.
     await dbContext.Database.MigrateAsync();
 
-    // Seed development/demo data.
-    await DevelopmentDataSeeder.SeedAsync(dbContext);
+    var seedDemoData =
+        builder.Configuration.GetValue<bool>("SeedDemoData");
+
+    if (app.Environment.IsDevelopment() || seedDemoData)
+    {
+        await DevelopmentDataSeeder.SeedAsync(dbContext);
+    }
 }
 
 // -------------------------------------------------------
 // Middleware
 // -------------------------------------------------------
+
+app.UseForwardedHeaders();
 
 app.UseCors("Frontend");
 

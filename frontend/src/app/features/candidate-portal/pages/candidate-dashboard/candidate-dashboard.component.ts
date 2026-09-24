@@ -136,3 +136,4 @@ export class CandidateDashboardComponent implements OnInit {
     void this.router.navigate(['/my-progress']);
   }
 }
+

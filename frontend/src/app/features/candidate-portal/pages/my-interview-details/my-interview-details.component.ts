@@ -139,3 +139,4 @@ export class MyInterviewDetailsComponent implements OnInit {
     void this.router.navigate(['/my-interviews']);
   }
 }
+

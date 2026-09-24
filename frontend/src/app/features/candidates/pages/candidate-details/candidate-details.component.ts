@@ -148,3 +148,4 @@ export class CandidateDetailsComponent implements OnInit {
     ]);
   }
 }
+
