@@ -1,0 +1,201 @@
+<section class="dashboard-page">
+
+  <div class="page-header">
+    <div>
+      <h1>My Dashboard</h1>
+      <p>
+        Track your mock interview sessions,
+        feedback and practice progress.
+      </p>
+    </div>
+  </div>
+
+  @if (loading) {
+
+    <div class="card">
+      Loading your dashboard...
+    </div>
+
+  } @else if (error) {
+
+    <div class="card">
+      {{ error }}
+    </div>
+
+  } @else {
+
+    <div class="stats-grid">
+
+      <div class="stat-card">
+        <span>Completed Sessions</span>
+        <strong>{{ stats.completedInterviews }}</strong>
+        <small>Mock interviews completed</small>
+      </div>
+
+      <div class="stat-card">
+        <span>Upcoming Sessions</span>
+        <strong>{{ stats.upcomingInterviews }}</strong>
+        <small>Scheduled interviews</small>
+      </div>
+
+      <div class="stat-card">
+        <span>Average Score</span>
+        <strong>{{ stats.averageScore }}/10</strong>
+        <small>Across completed sessions</small>
+      </div>
+
+      <div class="stat-card">
+        <span>Latest Score</span>
+        <strong>{{ stats.latestScore }}/10</strong>
+        <small>Most recent feedback</small>
+      </div>
+
+    </div>
+
+    <div class="dashboard-grid">
+
+      <div class="card">
+
+        <div class="card-header">
+          <div>
+            <h2>Upcoming Interview</h2>
+            <p>Your next scheduled practice session.</p>
+          </div>
+        </div>
+
+        @if (upcomingInterview) {
+
+          <div class="interview-content">
+
+            <div>
+              <span class="label">Interview</span>
+              <strong>
+                {{ upcomingInterview.title }}
+              </strong>
+            </div>
+
+            <div>
+              <span class="label">Date</span>
+              <strong>
+                {{ formatDate(upcomingInterview.scheduledAt) }}
+              </strong>
+            </div>
+
+            <div>
+              <span class="label">Time</span>
+              <strong>
+                {{ formatTime(upcomingInterview.scheduledAt) }}
+              </strong>
+            </div>
+
+            <div>
+              <span class="label">Duration</span>
+              <strong>
+                {{ upcomingInterview.durationMinutes }}
+                minutes
+              </strong>
+            </div>
+
+          </div>
+
+        } @else {
+
+          <p>
+            You have no upcoming interviews scheduled.
+          </p>
+
+        }
+
+      </div>
+
+      <div class="card">
+
+        <div class="card-header">
+
+          <div>
+            <h2>Practice Progress</h2>
+            <p>
+              Your performance across completed sessions.
+            </p>
+          </div>
+
+          <button
+            class="secondary-button"
+            (click)="viewProgress()">
+            View Progress
+          </button>
+
+        </div>
+
+        <div class="progress-summary">
+
+          <div class="score">
+            {{ stats.averageScore }}
+            <span>/10</span>
+          </div>
+
+          <div>
+            <strong>Current Average</strong>
+
+            <p>
+              Based on
+              {{ stats.completedInterviews }}
+              completed mock interviews.
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="card feedback-card">
+
+      <div class="card-header">
+
+        <div>
+          <h2>Latest Feedback</h2>
+          <p>Your most recent interviewer feedback.</p>
+        </div>
+
+        @if (latestInterview) {
+          <span class="outcome">
+            {{ getOutcomeLabel(latestInterview.outcome) }}
+          </span>
+        }
+
+      </div>
+
+      @if (latestInterview) {
+
+        <div class="feedback-title">
+
+          <div>
+            <strong>
+              {{ latestInterview.title }}
+            </strong>
+
+            <span>
+              {{ formatDate(latestInterview.scheduledAt) }}
+            </span>
+          </div>
+
+          <div class="feedback-score">
+            {{ latestInterview.score }}/10
+          </div>
+
+        </div>
+
+      } @else {
+
+        <p>No feedback is available yet.</p>
+
+      }
+
+    </div>
+
+  }
+
+</section>
+

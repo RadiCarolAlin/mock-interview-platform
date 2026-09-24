@@ -5,6 +5,16 @@ namespace InterviewPractice.Application.Interviews;
 
 public interface IInterviewService
 {
+    Task<CandidateInterviewDetailsDto?> GetCandidateInterviewAsync(
+        Guid interviewId,
+        Guid candidateId,
+        CancellationToken cancellationToken = default);
+
+    Task<InterviewDetailsDto?> CreateForUserAsync(
+        CreateInterviewRequest request,
+        string oktaUserId,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<InterviewDto>> GetAllAsync(
         string? search = null,
         InterviewStatus? status = null,

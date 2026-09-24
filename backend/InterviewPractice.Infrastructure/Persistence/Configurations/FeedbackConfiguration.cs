@@ -8,7 +8,11 @@ public class FeedbackConfiguration : IEntityTypeConfiguration<Feedback>
 {
     public void Configure(EntityTypeBuilder<Feedback> builder)
     {
-        builder.ToTable("Feedbacks");
+        builder.ToTable("Feedbacks", table =>
+        {
+            table.HasCheckConstraint("CK_Feedbacks_Outcome", "\"Outcome\" IN (1, 2, 3, 4)");
+            table.HasCheckConstraint("CK_Feedbacks_OverallScore", "\"OverallScore\" BETWEEN 1 AND 10");
+        });
 
         builder.HasKey(x => x.Id);
 

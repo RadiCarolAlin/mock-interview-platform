@@ -1,40 +1,54 @@
 using System.Security.Claims;
-using InterviewPractice.Infrastructure.Persistence;
+using InterviewPractice.Application.Auth;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
 
 namespace InterviewPractice.Api.Authorization;
 
 public class UserRoleAuthorizationHandler
     : AuthorizationHandler<UserRoleRequirement>
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly ICurrentUserService _currentUserService;
 
     public UserRoleAuthorizationHandler(
-        ApplicationDbContext dbContext)
+        ICurrentUserService currentUserService)
     {
-        _dbContext = dbContext;
+        _currentUserService = currentUserService;
     }
 
     protected override async Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         UserRoleRequirement requirement)
     {
-        var oktaUserId =
-            context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (string.IsNullOrWhiteSpace(oktaUserId))
+        if (context.User.Identity?.IsAuthenticated != true)
         {
             return;
         }
 
-        var hasRole = await _dbContext.Users
-            .AsNoTracking()
-            .AnyAsync(x =>
-                x.OktaUserId == oktaUserId &&
-                x.Role == requirement.Role);
+        var oktaUserId =
+            context.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if (hasRole)
+        var email = context.User.FindFirstValue(ClaimTypes.Email)
+            ?? context.User.FindFirstValue("preferred_username");
+
+        if (string.IsNullOrWhiteSpace(oktaUserId) ||
+            string.IsNullOrWhiteSpace(email))
+        {
+            return;
+        }
+
+        var currentUser = await _currentUserService.GetOrLinkAsync(
+            oktaUserId,
+            email,
+            context.User.FindFirstValue(ClaimTypes.GivenName)
+                ?? context.User.FindFirstValue("given_name") ?? string.Empty,
+            context.User.FindFirstValue(ClaimTypes.Surname)
+                ?? context.User.FindFirstValue("family_name") ?? string.Empty,
+            context.User.FindAll("groups").Select(x => x.Value).ToArray(),
+            context.Resource is HttpContext httpContext
+                ? httpContext.RequestAborted
+                : CancellationToken.None);
+
+        if (currentUser?.Role == requirement.Role)
         {
             context.Succeed(requirement);
         }

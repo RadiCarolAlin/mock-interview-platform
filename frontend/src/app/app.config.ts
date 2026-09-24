@@ -1,10 +1,11 @@
+import { authErrorInterceptor } from './core/interceptors/auth-error.interceptor';
 import {
   ApplicationConfig,
   provideZoneChangeDetection
 } from '@angular/core';
 
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 
 import { routes } from './app.routes';
 
@@ -16,7 +17,7 @@ export const appConfig: ApplicationConfig = {
 
     provideRouter(routes),
 
-    provideHttpClient()
+    provideHttpClient(withInterceptors([authErrorInterceptor]))
   ]
 };
 

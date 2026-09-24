@@ -1,5 +1,47 @@
 # MockInterviewPlatform
 
+## Application structure
+
+```text
+src/app/
+├── core/
+│   ├── guards/
+│   ├── models/
+│   └── services/
+├── features/
+│   ├── interviewer/
+│   │   ├── dashboard/pages/interviewer-dashboard/
+│   │   ├── candidates/
+│   │   │   ├── models/
+│   │   │   ├── pages/         # candidate-list, candidate-details, candidate-form
+│   │   │   └── services/
+│   │   ├── interviews/
+│   │   │   ├── models/
+│   │   │   ├── pages/         # interview-list, interview-details, interview-form
+│   │   │   └── services/
+│   │   ├── feedback/          # models, pages, services
+│   │   └── reports/           # pages, services
+│   └── candidate/
+│       ├── dashboard/pages/candidate-dashboard/
+│       ├── interviews/pages/
+│       │   ├── my-interviews/
+│       │   └── my-interview-details/
+│       ├── progress/pages/my-progress/
+│       └── services/
+├── layout/                   # header, sidebar, main-layout
+└── app.routes.ts
+```
+
+`core` contains application-wide authentication, user models and route guards.
+`features/interviewer` contains candidate management, interview management,
+feedback and reports. `features/candidate` contains the signed-in candidate's
+dashboard, interviews and progress. Its shared `CandidatePortalService` lives in
+`candidate/services` because all three sections use the candidate API.
+
+Keep feature-specific models and services with their feature. Put shared page
+chrome in `layout`. Define navigation in `app.routes.ts`; folder names do not
+change public URLs such as `/dashboard`, `/interviews` or `/my-interviews`.
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.18.
 
 ## Development server

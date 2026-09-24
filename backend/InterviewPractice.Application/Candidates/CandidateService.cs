@@ -1,3 +1,4 @@
+using InterviewPractice.Application.Common.Exceptions;
 using InterviewPractice.Application.Candidates.Dtos;
 using InterviewPractice.Application.Common.Interfaces;
 using InterviewPractice.Domain.Entities;
@@ -13,6 +14,22 @@ public class CandidateService : ICandidateService
     public CandidateService(IApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
+    }
+
+    public async Task<Guid?> GetProfileIdByOktaUserIdAsync(
+        string? oktaUserId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(oktaUserId))
+        {
+            return null;
+        }
+
+        return await _dbContext.CandidateProfiles
+            .AsNoTracking()
+            .Where(x => x.User.OktaUserId == oktaUserId)
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<IReadOnlyList<CandidateDto>> GetAllAsync(
@@ -93,7 +110,7 @@ public class CandidateService : ICandidateService
 
         if (emailExists)
         {
-            throw new InvalidOperationException(
+            throw new BusinessConflictException(
                 "A user with this email already exists.");
         }
 

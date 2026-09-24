@@ -5,22 +5,32 @@ metadata:
   namespace: mock-interview
   labels:
     app: mock-interview-frontend
+
 spec:
   replicas: 1
+
   selector:
     matchLabels:
       app: mock-interview-frontend
+
   template:
     metadata:
       labels:
         app: mock-interview-frontend
+
     spec:
       containers:
         - name: frontend
           image: europe-central2-docker.pkg.dev/mock-interview-platform-carol/mock-interview-repo/mock-interview-frontend:latest
           imagePullPolicy: Always
+
+          env:
+            - name: API_UPSTREAM
+              value: "mock-interview-api:80"
+
           ports:
             - containerPort: 80
+
           resources:
             requests:
               cpu: "100m"

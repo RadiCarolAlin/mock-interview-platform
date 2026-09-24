@@ -1,3 +1,4 @@
+import { LoginComponent } from './features/auth/pages/login/login.component';
 import { Routes } from '@angular/router';
 
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
@@ -7,31 +8,32 @@ import { interviewerGuard } from './core/guards/interviewer.guard';
 import { candidateGuard } from './core/guards/candidate.guard';
 
 // INTERVIEWER - DASHBOARD
-import { InterviewerDashboardComponent } from './features/dashboard/pages/interviewer-dashboard/interviewer-dashboard.component';
+import { InterviewerDashboardComponent } from './features/interviewer/dashboard/pages/interviewer-dashboard/interviewer-dashboard.component';
 
 // INTERVIEWER - INTERVIEWS
-import { InterviewListComponent } from './features/interviews/pages/interview-list/interview-list.component';
-import { InterviewFormComponent } from './features/interviews/pages/interview-form/interview-form.component';
-import { InterviewDetailsComponent } from './features/interviews/pages/interview-details/interview-details.component';
+import { InterviewListComponent } from './features/interviewer/interviews/pages/interview-list/interview-list.component';
+import { InterviewFormComponent } from './features/interviewer/interviews/pages/interview-form/interview-form.component';
+import { InterviewDetailsComponent } from './features/interviewer/interviews/pages/interview-details/interview-details.component';
 
 // INTERVIEWER - CANDIDATES
-import { CandidateListComponent } from './features/candidates/pages/candidate-list/candidate-list.component';
-import { CandidateFormComponent } from './features/candidates/pages/candidate-form/candidate-form.component';
-import { CandidateDetailsComponent } from './features/candidates/pages/candidate-details/candidate-details.component';
+import { CandidateListComponent } from './features/interviewer/candidates/pages/candidate-list/candidate-list.component';
+import { CandidateFormComponent } from './features/interviewer/candidates/pages/candidate-form/candidate-form.component';
+import { CandidateDetailsComponent } from './features/interviewer/candidates/pages/candidate-details/candidate-details.component';
 
 // INTERVIEWER - FEEDBACK
-import { FeedbackFormComponent } from './features/feedback/pages/feedback-form/feedback-form.component';
+import { FeedbackFormComponent } from './features/interviewer/feedback/pages/feedback-form/feedback-form.component';
 
 // INTERVIEWER - REPORTS
-import { ReportsDashboardComponent } from './features/reports/pages/reports-dashboard/reports-dashboard.component';
+import { ReportsDashboardComponent } from './features/interviewer/reports/pages/reports-dashboard/reports-dashboard.component';
 
 // CANDIDATE PORTAL
-import { CandidateDashboardComponent } from './features/candidate-portal/pages/candidate-dashboard/candidate-dashboard.component';
-import { MyInterviewsComponent } from './features/candidate-portal/pages/my-interviews/my-interviews.component';
-import { MyInterviewDetailsComponent } from './features/candidate-portal/pages/my-interview-details/my-interview-details.component';
-import { MyProgressComponent } from './features/candidate-portal/pages/my-progress/my-progress.component';
+import { CandidateDashboardComponent } from './features/candidate/dashboard/pages/candidate-dashboard/candidate-dashboard.component';
+import { MyInterviewsComponent } from './features/candidate/interviews/pages/my-interviews/my-interviews.component';
+import { MyInterviewDetailsComponent } from './features/candidate/interviews/pages/my-interview-details/my-interview-details.component';
+import { MyProgressComponent } from './features/candidate/progress/pages/my-progress/my-progress.component';
 
 export const routes: Routes = [
+  { path: 'login', component: LoginComponent },
   {
     path: '',
     component: MainLayoutComponent,

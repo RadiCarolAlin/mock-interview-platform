@@ -44,7 +44,10 @@ namespace InterviewPractice.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("CandidateProfiles", (string)null);
+                    b.ToTable("CandidateProfiles", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CandidateProfiles_ExperienceLevel", "\"ExperienceLevel\" IN (1, 2, 3, 4)");
+                        });
                 });
 
             modelBuilder.Entity("InterviewPractice.Domain.Entities.Feedback", b =>
@@ -81,7 +84,12 @@ namespace InterviewPractice.Infrastructure.Persistence.Migrations
                     b.HasIndex("InterviewId")
                         .IsUnique();
 
-                    b.ToTable("Feedbacks", (string)null);
+                    b.ToTable("Feedbacks", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Feedbacks_Outcome", "\"Outcome\" IN (1, 2, 3, 4)");
+
+                            t.HasCheckConstraint("CK_Feedbacks_OverallScore", "\"OverallScore\" BETWEEN 1 AND 10");
+                        });
                 });
 
             modelBuilder.Entity("InterviewPractice.Domain.Entities.Interview", b =>
@@ -130,7 +138,16 @@ namespace InterviewPractice.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("InterviewerId");
 
-                    b.ToTable("Interviews", (string)null);
+                    b.ToTable("Interviews", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Interviews_DurationMinutes", "\"DurationMinutes\" > 0");
+
+                            t.HasCheckConstraint("CK_Interviews_Level", "\"Level\" IN (1, 2, 3, 4)");
+
+                            t.HasCheckConstraint("CK_Interviews_Status", "\"Status\" IN (1, 2, 3, 4)");
+
+                            t.HasCheckConstraint("CK_Interviews_Type", "\"Type\" IN (1, 2, 3)");
+                        });
                 });
 
             modelBuilder.Entity("InterviewPractice.Domain.Entities.InterviewerProfile", b =>
@@ -172,6 +189,7 @@ namespace InterviewPractice.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<string>("OktaUserId")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -187,7 +205,12 @@ namespace InterviewPractice.Infrastructure.Persistence.Migrations
                     b.HasIndex("OktaUserId")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Users_OktaUserId_NotBlank", "btrim(\"OktaUserId\", U&'\\0009\\000A\\000B\\000C\\000D\\0020\\0085\\00A0\\1680\\2000\\2001\\2002\\2003\\2004\\2005\\2006\\2007\\2008\\2009\\200A\\2028\\2029\\202F\\205F\\3000') <> ''");
+
+                            t.HasCheckConstraint("CK_Users_Role", "\"Role\" IN (1, 2)");
+                        });
                 });
 
             modelBuilder.Entity("InterviewPractice.Domain.Entities.CandidateProfile", b =>

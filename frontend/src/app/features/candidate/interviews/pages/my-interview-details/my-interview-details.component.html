@@ -1,0 +1,263 @@
+<section class="details-page">
+
+  <button
+    class="back-button"
+    (click)="back()">
+    ← Back to My Interviews
+  </button>
+
+  @if (loading) {
+
+    <div class="card">
+      Loading interview details...
+    </div>
+
+  } @else if (error) {
+    <div class="card" role="alert">{{ error }}</div>
+  } @else if (notFound || !interview) {
+
+    <div class="card not-found">
+
+      <h2>Interview not found</h2>
+
+      <p>
+        The requested interview could not be found
+        or you do not have access to it.
+      </p>
+
+    </div>
+
+  } @else {
+
+    <div class="page-header">
+
+      <div>
+
+        <div class="title-row">
+
+          <h1>
+            {{ interview.title }}
+          </h1>
+
+          <span
+            class="status"
+            [class.completed]="interview.status === 3"
+            [class.scheduled]="interview.status === 1"
+            [class.in-progress]="interview.status === 2">
+
+            {{ getStatusLabel(interview.status) }}
+
+          </span>
+
+        </div>
+
+        <p>
+          Mock technical interview session
+        </p>
+
+      </div>
+
+    </div>
+
+    <div class="card">
+
+      <div class="card-header">
+
+        <div>
+          <h2>Interview Details</h2>
+          <p>
+            Information about your interview session.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="details-grid">
+
+        <div class="detail">
+          <span>Interviewer</span>
+          <strong>
+            {{ interview.interviewer }}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <span>Interview Type</span>
+          <strong>
+            {{ getTypeLabel(interview.type) }}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <span>Date</span>
+          <strong>
+            {{ formatDate(interview.scheduledAt) }}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <span>Time</span>
+          <strong>
+            {{ formatTime(interview.scheduledAt) }}
+          </strong>
+        </div>
+
+        <div class="detail">
+          <span>Duration</span>
+          <strong>
+            {{ interview.durationMinutes }} minutes
+          </strong>
+        </div>
+
+        @if (getTopics().length > 0) {
+
+          <div class="detail topics">
+
+            <span>Topics</span>
+
+            <div class="topic-list">
+
+              @for (topic of getTopics(); track topic) {
+
+                <span class="topic">
+                  {{ topic }}
+                </span>
+
+              }
+
+            </div>
+
+          </div>
+
+        }
+
+      </div>
+
+      @if (interview.notes) {
+
+        <div class="notes">
+
+          <span>Session Notes</span>
+
+          <p>
+            {{ interview.notes }}
+          </p>
+
+        </div>
+
+      }
+
+    </div>
+
+    <div class="card feedback-card">
+
+      <div class="card-header">
+
+        <div>
+          <h2>Your Feedback</h2>
+
+          <p>
+            Feedback provided by your interviewer.
+          </p>
+        </div>
+
+      </div>
+
+      @if (interview.feedback) {
+
+        <div class="feedback-summary">
+
+          <div class="score-box">
+
+            <span>Overall Score</span>
+
+            <strong>
+              {{ interview.feedback.overallScore }}
+              <small>/10</small>
+            </strong>
+
+          </div>
+
+          <div class="outcome-box">
+
+            <span>Outcome</span>
+
+            <strong class="outcome">
+              {{ getOutcomeLabel(interview.feedback.outcome) }}
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div class="feedback-content">
+
+          <div class="feedback-section">
+
+            <span class="section-label">
+              Strengths
+            </span>
+
+            <p>
+              {{ interview.feedback.strengths }}
+            </p>
+
+          </div>
+
+          <div class="feedback-section">
+
+            <span class="section-label">
+              Areas to Improve
+            </span>
+
+            <p>
+              {{ interview.feedback.improvementAreas }}
+            </p>
+
+          </div>
+
+        </div>
+
+        @if (interview.feedback.additionalComments) {
+
+          <div class="comments">
+
+            <span class="section-label">
+              Additional Comments
+            </span>
+
+            <p>
+              {{ interview.feedback.additionalComments }}
+            </p>
+
+          </div>
+
+        }
+
+      } @else {
+
+        <div class="no-feedback">
+
+          <div class="no-feedback-icon">
+            ✓
+          </div>
+
+          <strong>
+            Feedback not available yet
+          </strong>
+
+          <p>
+            Feedback will be available after this
+            interview session has been completed.
+          </p>
+
+        </div>
+
+      }
+
+    </div>
+
+  }
+
+</section>
+

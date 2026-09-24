@@ -22,8 +22,8 @@ export const interviewerGuard: CanActivateFn = () => {
         ? true
         : router.createUrlTree(['/my-dashboard']);
     }),
-    catchError(() => {
-      authService.login();
+    catchError(error => {
+      authService.handleAccessError(error);
       return of(false);
     })
   );

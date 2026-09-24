@@ -23,6 +23,12 @@ public class CurrentUserService : ICurrentUserService
         IReadOnlyCollection<string> groups,
         CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(oktaUserId) ||
+            string.IsNullOrWhiteSpace(email))
+        {
+            return null;
+        }
+
         oktaUserId = oktaUserId.Trim();
         email = email.Trim().ToLowerInvariant();
         firstName = firstName.Trim();
@@ -42,7 +48,9 @@ public class CurrentUserService : ICurrentUserService
             return null;
         }
 
-        // Already linked user.
+        var role = isCandidate ? UserRole.Candidate : UserRole.Interviewer;
+
+        // Identity takes precedence over email, including after an email change.
         var user = await _dbContext.Users
             .Include(x => x.CandidateProfile)
             .Include(x => x.InterviewerProfile)
@@ -50,56 +58,47 @@ public class CurrentUserService : ICurrentUserService
                 x => x.OktaUserId == oktaUserId,
                 cancellationToken);
 
-        if (user is not null)
+        if (user is null)
         {
-            return MapToDto(user);
+            // Email can only link identities explicitly provisioned as placeholders.
+            user = await _dbContext.Users
+                .Include(x => x.CandidateProfile)
+                .Include(x => x.InterviewerProfile)
+                .FirstOrDefaultAsync(
+                    x => x.Email == email,
+                    cancellationToken);
+
+            if (user is not null)
+            {
+                if (!IsUnlinkedIdentity(user.OktaUserId))
+                {
+                    return null;
+                }
+
+                user.OktaUserId = oktaUserId;
+                user.FirstName = firstName;
+                user.LastName = lastName;
+            }
+            else
+            {
+                user = new User
+                {
+                    Id = Guid.NewGuid(),
+                    OktaUserId = oktaUserId,
+                    Email = email,
+                    FirstName = firstName,
+                    LastName = lastName,
+                    Role = role
+                };
+
+                _dbContext.Users.Add(user);
+            }
         }
 
-        // Existing application user on first Okta login.
-        user = await _dbContext.Users
-            .Include(x => x.CandidateProfile)
-            .Include(x => x.InterviewerProfile)
-            .FirstOrDefaultAsync(
-                x => x.Email == email,
-                cancellationToken);
+        user.Role = role;
 
-        if (user is not null)
-        {
-            // Do not allow the Okta group to contradict
-            // the role already stored in the application.
-            if (isCandidate && user.Role != UserRole.Candidate)
-            {
-                return null;
-            }
-
-            if (isInterviewer && user.Role != UserRole.Interviewer)
-            {
-                return null;
-            }
-
-            user.OktaUserId = oktaUserId;
-            user.FirstName = firstName;
-            user.LastName = lastName;
-
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            return MapToDto(user);
-        }
-
-        // New user: provision from the trusted Okta group.
-        user = new User
-        {
-            Id = Guid.NewGuid(),
-            OktaUserId = oktaUserId,
-            Email = email,
-            FirstName = firstName,
-            LastName = lastName,
-            Role = isCandidate
-                ? UserRole.Candidate
-                : UserRole.Interviewer
-        };
-
-        if (isCandidate)
+        // Keep both profiles and their history when the active role changes.
+        if (isCandidate && user.CandidateProfile is null)
         {
             var candidateProfile = new CandidateProfile
             {
@@ -112,10 +111,9 @@ public class CurrentUserService : ICurrentUserService
 
             user.CandidateProfile = candidateProfile;
 
-            _dbContext.Users.Add(user);
             _dbContext.CandidateProfiles.Add(candidateProfile);
         }
-        else
+        else if (isInterviewer && user.InterviewerProfile is null)
         {
             var interviewerProfile = new InterviewerProfile
             {
@@ -126,13 +124,34 @@ public class CurrentUserService : ICurrentUserService
 
             user.InterviewerProfile = interviewerProfile;
 
-            _dbContext.Users.Add(user);
             _dbContext.InterviewerProfiles.Add(interviewerProfile);
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // Another request linked the placeholder first. Never retry by email.
+            return null;
+        }
 
         return MapToDto(user);
+    }
+
+    private static bool IsUnlinkedIdentity(string identity)
+    {
+        foreach (var prefix in new[] { "pending-", "dev-", "demo-" })
+        {
+            if (identity.StartsWith(prefix, StringComparison.Ordinal) &&
+                Guid.TryParseExact(identity[prefix.Length..], "D", out _))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static CurrentUserDto MapToDto(User user)

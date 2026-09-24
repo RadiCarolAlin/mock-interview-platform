@@ -8,7 +8,13 @@ public class InterviewConfiguration : IEntityTypeConfiguration<Interview>
 {
     public void Configure(EntityTypeBuilder<Interview> builder)
     {
-        builder.ToTable("Interviews");
+        builder.ToTable("Interviews", table =>
+        {
+            table.HasCheckConstraint("CK_Interviews_Type", "\"Type\" IN (1, 2, 3)");
+            table.HasCheckConstraint("CK_Interviews_Level", "\"Level\" IN (1, 2, 3, 4)");
+            table.HasCheckConstraint("CK_Interviews_Status", "\"Status\" IN (1, 2, 3, 4)");
+            table.HasCheckConstraint("CK_Interviews_DurationMinutes", "\"DurationMinutes\" > 0");
+        });
 
         builder.HasKey(x => x.Id);
 

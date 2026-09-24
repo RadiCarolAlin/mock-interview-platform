@@ -1,3 +1,4 @@
+using InterviewPractice.Api.ErrorHandling;
 using Google.Cloud.SecretManager.V1;
 using InterviewPractice.Api.Authorization;
 using InterviewPractice.Application.Auth;
@@ -22,6 +23,8 @@ var builder = WebApplication.CreateBuilder(args);
 // -------------------------------------------------------
 
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<ApiExceptionHandler>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -272,6 +275,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
+
 // -------------------------------------------------------
 // Swagger - development only
 // -------------------------------------------------------
@@ -297,7 +302,7 @@ using (var scope = app.Services.CreateScope())
     var seedDemoData =
         builder.Configuration.GetValue<bool>("SeedDemoData");
 
-    if (app.Environment.IsDevelopment() || seedDemoData)
+    if (app.Environment.IsDevelopment() && seedDemoData)
     {
         await DevelopmentDataSeeder.SeedAsync(dbContext);
     }

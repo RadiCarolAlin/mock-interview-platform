@@ -1,3 +1,4 @@
+using InterviewPractice.Application.Common.Validation;
 using InterviewPractice.Application.Candidates;
 using InterviewPractice.Application.Candidates.Dtos;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,7 @@ public class CandidatesController : ControllerBase
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<CandidateDetailsDto>> GetById(
-        Guid id,
+        [NonEmptyGuid] Guid id,
         CancellationToken cancellationToken)
     {
         var candidate = await _candidateService.GetByIdAsync(
@@ -63,7 +64,7 @@ public class CandidatesController : ControllerBase
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(
-        Guid id,
+        [NonEmptyGuid] Guid id,
         UpdateCandidateRequest request,
         CancellationToken cancellationToken)
     {

@@ -1,0 +1,24 @@
+<main class="login-page">
+  <section class="login-card" aria-labelledby="login-title">
+    <div class="brand-mark" aria-hidden="true">MI</div>
+    <h1 id="login-title">Mock Interview</h1>
+    <p class="description">Prepare, conduct and review technical interview practice sessions.</p>
+
+    @if (error) {
+      <div class="error-message" role="alert">
+        <p>{{ error }}</p>
+        <button class="retry-button" type="button" (click)="checkSession()">Try again</button>
+      </div>
+    }
+
+    <button class="sign-in-button" type="button"
+            [disabled]="checkingSession || signingIn" (click)="signIn()">
+      {{ signingIn ? 'Opening Okta…' : 'Sign in with Okta' }}
+    </button>
+
+    @if (checkingSession) {
+      <p class="session-status" role="status">Checking your session…</p>
+    }
+    <p class="security-note">Secure authentication through Okta.</p>
+  </section>
+</main>

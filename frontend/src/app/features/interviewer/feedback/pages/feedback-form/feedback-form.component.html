@@ -1,0 +1,195 @@
+<section class="feedback-form-page">
+
+  <button
+    type="button"
+    class="back-button"
+    (click)="cancel()">
+    ← Back to Interview
+  </button>
+
+  @if (loading) {
+
+    <div class="interview-summary">
+      Loading interview...
+    </div>
+
+  } @else if (error || !interview) {
+
+    <div class="interview-summary">
+      {{ error }}
+    </div>
+
+  } @else {
+
+    <div class="page-header">
+      <h1>Add Interview Feedback</h1>
+      <p>
+        Record the outcome and performance of this mock interview.
+      </p>
+    </div>
+
+    <div class="interview-summary">
+
+      <div>
+        <span>Candidate</span>
+        <strong>{{ interview.candidateName }}</strong>
+      </div>
+
+      <div>
+        <span>Interview</span>
+        <strong>{{ interview.title }}</strong>
+      </div>
+
+    </div>
+
+    <form
+      class="form-card"
+      [formGroup]="feedbackForm"
+      (ngSubmit)="save()">
+
+      <div class="section-header">
+        <h2>Performance Feedback</h2>
+
+        <p>
+          Capture strengths, improvement areas and the overall interview outcome.
+        </p>
+      </div>
+
+      <div class="form-group score-group">
+
+        <label for="overallScore">
+          Overall Score <span>*</span>
+        </label>
+
+        <div class="score-input">
+
+          <input
+            id="overallScore"
+            type="number"
+            min="1"
+            max="10"
+            formControlName="overallScore">
+
+          <span>/ 10</span>
+
+        </div>
+        @if (fieldError(feedbackForm.controls.overallScore)) {
+          <small class="validation-error">{{ fieldError(feedbackForm.controls.overallScore) }}</small>
+        }
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="strengths">
+          Strengths <span>*</span>
+        </label>
+
+        <textarea
+          id="strengths"
+          rows="5"
+          formControlName="strengths"
+          placeholder="e.g. Strong Angular fundamentals, clear communication, good architectural decisions...">
+        </textarea>
+        @if (fieldError(feedbackForm.controls.strengths)) {
+          <small class="validation-error">{{ fieldError(feedbackForm.controls.strengths) }}</small>
+        }
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="improvementAreas">
+          Improvement Areas <span>*</span>
+        </label>
+
+        <textarea
+          id="improvementAreas"
+          rows="5"
+          formControlName="improvementAreas"
+          placeholder="e.g. Improve RxJS knowledge and provide more detailed explanations...">
+        </textarea>
+        @if (fieldError(feedbackForm.controls.improvementAreas)) {
+          <small class="validation-error">{{ fieldError(feedbackForm.controls.improvementAreas) }}</small>
+        }
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="outcome">
+          Outcome / Recommendation <span>*</span>
+        </label>
+
+        <select
+          id="outcome"
+          formControlName="outcome">
+
+          @for (outcome of outcomes; track outcome.value) {
+            <option [ngValue]="outcome.value">
+              {{ outcome.label }}
+            </option>
+          }
+
+        </select>
+        @if (fieldError(feedbackForm.controls.outcome)) {
+          <small class="validation-error">{{ fieldError(feedbackForm.controls.outcome) }}</small>
+        }
+
+      </div>
+
+      <div class="form-group">
+
+        <label for="additionalComments">
+          Additional Comments
+        </label>
+
+        <textarea
+          id="additionalComments"
+          rows="4"
+          formControlName="additionalComments"
+          placeholder="Add any additional observations or recommendations...">
+        </textarea>
+        @if (fieldError(feedbackForm.controls.additionalComments)) {
+          <small class="validation-error">{{ fieldError(feedbackForm.controls.additionalComments) }}</small>
+        }
+
+      </div>
+
+      @if (submitError) {
+        <small class="validation-error">
+          {{ submitError }}
+        </small>
+      }
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="submitting"
+          (click)="cancel()">
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="submitting">
+
+          @if (submitting) {
+            Saving...
+          } @else {
+            Save Feedback
+          }
+
+        </button>
+
+      </div>
+
+    </form>
+
+  }
+
+</section>
+

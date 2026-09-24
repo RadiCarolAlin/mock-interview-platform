@@ -1,4 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { apiErrorMessage } from '../utils/api-error';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
@@ -22,6 +25,10 @@ interface AuthMeResponse {
 export class AuthService {
 
   private readonly apiUrl = '/api/auth';
+  private readonly router = inject(Router);
+
+  accessError = signal('');
+  private loginStarted = false;
 
   currentUser = signal<User | null>(null);
 
@@ -38,6 +45,7 @@ export class AuthService {
       )
       .pipe(
         tap(response => {
+          this.accessError.set('');
           this.currentUser.set({
             id: response.userId,
             firstName: response.firstName,
@@ -51,7 +59,18 @@ export class AuthService {
       );
   }
 
+  handleAccessError(error: unknown): void {
+    if (error instanceof HttpErrorResponse && error.status === 401) {
+      this.currentUser.set(null);
+      this.accessError.set('');
+      void this.router.navigate(['/login'], { replaceUrl: true });
+    }
+    else this.accessError.set(apiErrorMessage(error));
+  }
+
   login(): void {
+    if (this.loginStarted) return;
+    this.loginStarted = true;
     window.location.href = `${this.apiUrl}/login`;
   }
 

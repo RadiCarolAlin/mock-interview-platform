@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using InterviewPractice.Domain.Entities;
 using InterviewPractice.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -6,233 +8,77 @@ namespace InterviewPractice.Infrastructure.Persistence.Seed;
 
 public static class DevelopmentDataSeeder
 {
+    private const string DemoNotes = "Development demo data.";
+
     public static async Task SeedAsync(
         ApplicationDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
-        const string interviewerEmail = "john.interviewer@example.com";
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        // Serialize this seeder across processes; the lock is released on commit/rollback.
+        await dbContext.Database.ExecuteSqlRawAsync(
+            "SELECT pg_advisory_xact_lock(7483926102451)", cancellationToken);
 
-        // ---------------------------------------------------------
-        // INTERVIEWER
-        // ---------------------------------------------------------
-
-        var interviewer = await dbContext.InterviewerProfiles
-            .Include(x => x.User)
-            .FirstOrDefaultAsync(
-                x => x.User.Email == interviewerEmail,
-                cancellationToken);
-
+        var seedTime = DateTime.UtcNow;
+        var interviewerUser = await EnsureUserAsync("john", "john.interviewer@example.com",
+            "John", "Interviewer", UserRole.Interviewer, "dev");
+        var interviewer = interviewerUser.InterviewerProfile;
         if (interviewer is null)
         {
-            var interviewerUser = new User
-            {
-                Id = Guid.NewGuid(),
-                OktaUserId = $"dev-{Guid.NewGuid()}",
-                Email = interviewerEmail,
-                FirstName = "John",
-                LastName = "Interviewer",
-                Role = UserRole.Interviewer
-            };
-
             interviewer = new InterviewerProfile
             {
-                Id = Guid.NewGuid(),
+                Id = StableId("interviewer/john"),
                 UserId = interviewerUser.Id,
                 User = interviewerUser
             };
-
+            interviewerUser.InterviewerProfile = interviewer;
             dbContext.InterviewerProfiles.Add(interviewer);
-
-            await dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        // ---------------------------------------------------------
-        // DEMO DATA
-        // ---------------------------------------------------------
-
-        const string demoMarkerEmail = "alex.popescu@example.com";
-
-        var demoDataAlreadyExists = await dbContext.Users
-            .AnyAsync(
-                x => x.Email == demoMarkerEmail,
-                cancellationToken);
-
-        if (demoDataAlreadyExists)
-        {
-            return;
-        }
-
-        // ---------------------------------------------------------
-        // CANDIDATE 1 - ROXANA
-        // Real demo candidate that can be linked to Okta
-        // ---------------------------------------------------------
-
-        const string roxanaEmail = "radica2020@gmail.com";
-
-        var roxana = await dbContext.CandidateProfiles
-            .Include(x => x.User)
-            .FirstOrDefaultAsync(
-                x => x.User.Email == roxanaEmail,
-                cancellationToken);
-
-        if (roxana is null)
-        {
-            var roxanaUser = new User
-            {
-                Id = Guid.NewGuid(),
-                OktaUserId = $"pending-{Guid.NewGuid()}",
-                Email = roxanaEmail,
-                FirstName = "Roxana",
-                LastName = "Maria",
-                Role = UserRole.Candidate
-            };
-
-            roxana = new CandidateProfile
-            {
-                Id = Guid.NewGuid(),
-                UserId = roxanaUser.Id,
-                User = roxanaUser,
-                TargetRole = "Senior .NET Developer",
-                ExperienceLevel = ExperienceLevel.Senior
-            };
-
-            dbContext.CandidateProfiles.Add(roxana);
-        }
-
-        // ---------------------------------------------------------
-        // CANDIDATE 2 - ALEX
-        // ---------------------------------------------------------
-
-        var alexUser = new User
-        {
-            Id = Guid.NewGuid(),
-            OktaUserId = $"demo-{Guid.NewGuid()}",
-            Email = "alex.popescu@example.com",
-            FirstName = "Alex",
-            LastName = "Popescu",
-            Role = UserRole.Candidate
-        };
-
-        var alex = new CandidateProfile
-        {
-            Id = Guid.NewGuid(),
-            UserId = alexUser.Id,
-            User = alexUser,
-            TargetRole = "Full-Stack Developer",
-            ExperienceLevel = ExperienceLevel.Mid
-        };
-
-        // ---------------------------------------------------------
-        // CANDIDATE 3 - MARIA
-        // ---------------------------------------------------------
-
-        var mariaUser = new User
-        {
-            Id = Guid.NewGuid(),
-            OktaUserId = $"demo-{Guid.NewGuid()}",
-            Email = "maria.ionescu@example.com",
-            FirstName = "Maria",
-            LastName = "Ionescu",
-            Role = UserRole.Candidate
-        };
-
-        var maria = new CandidateProfile
-        {
-            Id = Guid.NewGuid(),
-            UserId = mariaUser.Id,
-            User = mariaUser,
-            TargetRole = "Frontend Developer",
-            ExperienceLevel = ExperienceLevel.Junior
-        };
-
-        // ---------------------------------------------------------
-        // CANDIDATE 4 - ANDREI
-        // ---------------------------------------------------------
-
-        var andreiUser = new User
-        {
-            Id = Guid.NewGuid(),
-            OktaUserId = $"demo-{Guid.NewGuid()}",
-            Email = "andrei.marin@example.com",
-            FirstName = "Andrei",
-            LastName = "Marin",
-            Role = UserRole.Candidate
-        };
-
-        var andrei = new CandidateProfile
-        {
-            Id = Guid.NewGuid(),
-            UserId = andreiUser.Id,
-            User = andreiUser,
-            TargetRole = "Backend Developer",
-            ExperienceLevel = ExperienceLevel.Senior
-        };
-
-        // ---------------------------------------------------------
-        // CANDIDATE 5 - ELENA
-        // ---------------------------------------------------------
-
-        var elenaUser = new User
-        {
-            Id = Guid.NewGuid(),
-            OktaUserId = $"demo-{Guid.NewGuid()}",
-            Email = "elena.stan@example.com",
-            FirstName = "Elena",
-            LastName = "Stan",
-            Role = UserRole.Candidate
-        };
-
-        var elena = new CandidateProfile
-        {
-            Id = Guid.NewGuid(),
-            UserId = elenaUser.Id,
-            User = elenaUser,
-            TargetRole = "Software Engineer",
-            ExperienceLevel = ExperienceLevel.Lead
-        };
-
-        dbContext.CandidateProfiles.AddRange(
-            alex,
-            maria,
-            andrei,
-            elena);
-
-        // Save candidates first so their relationships are established.
-        await dbContext.SaveChangesAsync(cancellationToken);
+        var roxana = await EnsureCandidateAsync("roxana", "radica2020@gmail.com",
+            "Roxana", "Maria", "Senior .NET Developer", ExperienceLevel.Senior, "pending");
+        var alex = await EnsureCandidateAsync("alex", "alex.popescu@example.com",
+            "Alex", "Popescu", "Full-Stack Developer", ExperienceLevel.Mid);
+        var maria = await EnsureCandidateAsync("maria", "maria.ionescu@example.com",
+            "Maria", "Ionescu", "Frontend Developer", ExperienceLevel.Junior);
+        var andrei = await EnsureCandidateAsync("andrei", "andrei.marin@example.com",
+            "Andrei", "Marin", "Backend Developer", ExperienceLevel.Senior);
+        var elena = await EnsureCandidateAsync("elena", "elena.stan@example.com",
+            "Elena", "Stan", "Software Engineer", ExperienceLevel.Lead);
 
         // ---------------------------------------------------------
         // ROXANA INTERVIEWS
         // ---------------------------------------------------------
 
-        var roxanaInterview1 = CreateInterview(
+        var roxanaInterview1 = await EnsureInterviewAsync("roxanaInterview1",
             roxana.Id,
             interviewer.Id,
             "Senior .NET Technical Interview",
             InterviewType.Technical,
             ExperienceLevel.Senior,
-            DateTime.UtcNow.AddDays(-20),
+            seedTime.AddDays(-20),
             60,
             "C#, .NET, Entity Framework Core, SQL",
             InterviewStatus.Completed);
 
-        var roxanaInterview2 = CreateInterview(
+        var roxanaInterview2 = await EnsureInterviewAsync("roxanaInterview2",
             roxana.Id,
             interviewer.Id,
             "Backend Architecture Interview",
             InterviewType.SystemDesign,
             ExperienceLevel.Senior,
-            DateTime.UtcNow.AddDays(-10),
+            seedTime.AddDays(-10),
             60,
             "REST APIs, Clean Architecture, scalability",
             InterviewStatus.Completed);
 
-        var roxanaInterview3 = CreateInterview(
+        var roxanaInterview3 = await EnsureInterviewAsync("roxanaInterview3",
             roxana.Id,
             interviewer.Id,
             "Advanced .NET Mock Interview",
             InterviewType.Technical,
             ExperienceLevel.Senior,
-            DateTime.UtcNow.AddDays(4),
+            seedTime.AddDays(4),
             60,
             "Concurrency, performance, distributed systems",
             InterviewStatus.Scheduled);
@@ -241,24 +87,24 @@ public static class DevelopmentDataSeeder
         // ALEX INTERVIEWS
         // ---------------------------------------------------------
 
-        var alexInterview1 = CreateInterview(
+        var alexInterview1 = await EnsureInterviewAsync("alexInterview1",
             alex.Id,
             interviewer.Id,
             "Full-Stack Technical Interview",
             InterviewType.Technical,
             ExperienceLevel.Mid,
-            DateTime.UtcNow.AddDays(-15),
+            seedTime.AddDays(-15),
             60,
             "Angular, TypeScript, C#, REST APIs",
             InterviewStatus.Completed);
 
-        var alexInterview2 = CreateInterview(
+        var alexInterview2 = await EnsureInterviewAsync("alexInterview2",
             alex.Id,
             interviewer.Id,
             "System Design Practice",
             InterviewType.SystemDesign,
             ExperienceLevel.Mid,
-            DateTime.UtcNow.AddDays(2),
+            seedTime.AddDays(2),
             60,
             "API design, caching, database design",
             InterviewStatus.Scheduled);
@@ -267,24 +113,24 @@ public static class DevelopmentDataSeeder
         // MARIA INTERVIEWS
         // ---------------------------------------------------------
 
-        var mariaInterview1 = CreateInterview(
+        var mariaInterview1 = await EnsureInterviewAsync("mariaInterview1",
             maria.Id,
             interviewer.Id,
             "Frontend Fundamentals Interview",
             InterviewType.Technical,
             ExperienceLevel.Junior,
-            DateTime.UtcNow.AddDays(-8),
+            seedTime.AddDays(-8),
             45,
             "JavaScript, TypeScript, Angular fundamentals",
             InterviewStatus.Completed);
 
-        var mariaInterview2 = CreateInterview(
+        var mariaInterview2 = await EnsureInterviewAsync("mariaInterview2",
             maria.Id,
             interviewer.Id,
             "Angular Practice Interview",
             InterviewType.Technical,
             ExperienceLevel.Junior,
-            DateTime.UtcNow.AddDays(6),
+            seedTime.AddDays(6),
             45,
             "Angular components, services, RxJS",
             InterviewStatus.Scheduled);
@@ -293,13 +139,13 @@ public static class DevelopmentDataSeeder
         // ANDREI INTERVIEWS
         // ---------------------------------------------------------
 
-        var andreiInterview1 = CreateInterview(
+        var andreiInterview1 = await EnsureInterviewAsync("andreiInterview1",
             andrei.Id,
             interviewer.Id,
             "Senior Backend Interview",
             InterviewType.Technical,
             ExperienceLevel.Senior,
-            DateTime.UtcNow.AddDays(-5),
+            seedTime.AddDays(-5),
             60,
             "C#, PostgreSQL, microservices, Docker",
             InterviewStatus.Completed);
@@ -308,47 +154,30 @@ public static class DevelopmentDataSeeder
         // ELENA INTERVIEWS
         // ---------------------------------------------------------
 
-        var elenaInterview1 = CreateInterview(
+        var elenaInterview1 = await EnsureInterviewAsync("elenaInterview1",
             elena.Id,
             interviewer.Id,
             "Lead Engineer System Design",
             InterviewType.SystemDesign,
             ExperienceLevel.Lead,
-            DateTime.UtcNow.AddDays(-3),
+            seedTime.AddDays(-3),
             75,
             "Distributed systems, scalability, architecture",
             InterviewStatus.Completed);
 
-        var elenaInterview2 = CreateInterview(
+        var elenaInterview2 = await EnsureInterviewAsync("elenaInterview2",
             elena.Id,
             interviewer.Id,
             "Leadership & Behavioral Interview",
             InterviewType.Behavioral,
             ExperienceLevel.Lead,
-            DateTime.UtcNow.AddDays(8),
+            seedTime.AddDays(8),
             60,
             "Leadership, mentoring, technical decisions",
             InterviewStatus.Scheduled);
 
-        dbContext.Interviews.AddRange(
-            roxanaInterview1,
-            roxanaInterview2,
-            roxanaInterview3,
-            alexInterview1,
-            alexInterview2,
-            mariaInterview1,
-            mariaInterview2,
-            andreiInterview1,
-            elenaInterview1,
-            elenaInterview2);
-
-        await dbContext.SaveChangesAsync(cancellationToken);
-
-        // ---------------------------------------------------------
-        // FEEDBACK
-        // ---------------------------------------------------------
-
-        dbContext.Feedbacks.AddRange(
+        var feedbacks = new[]
+        {
             CreateFeedback(
                 roxanaInterview1.Id,
                 8,
@@ -396,36 +225,133 @@ public static class DevelopmentDataSeeder
                 "Could provide additional examples of cost-related architectural trade-offs.",
                 InterviewOutcome.StrongPerformance,
                 "Excellent lead-level performance.")
-        );
+        };
+
+        foreach (var feedback in feedbacks)
+        {
+            var interview = dbContext.Interviews.Local.Single(x => x.Id == feedback.InterviewId);
+            // Preserve existing feedback and respect a seed interview whose status was edited.
+            if (interview.Status == InterviewStatus.Completed &&
+                !await dbContext.Feedbacks.AnyAsync(x => x.InterviewId == feedback.InterviewId, cancellationToken))
+            {
+                dbContext.Feedbacks.Add(feedback);
+            }
+        }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
+        async Task<User> EnsureUserAsync(string key, string email, string firstName,
+            string lastName, UserRole role, string placeholderPrefix)
+        {
+            email = email.Trim().ToLowerInvariant();
+            var id = StableId($"user/{key}");
+            var matches = await dbContext.Users
+                .Include(x => x.CandidateProfile)
+                .Include(x => x.InterviewerProfile)
+                .Where(x => x.Id == id || x.Email == email)
+                .ToListAsync(cancellationToken);
+
+            if (matches.Count > 1)
+            {
+                throw new InvalidOperationException($"Conflicting demo user identity for seed key '{key}'.");
+            }
+
+            // Never change an existing user's identity, role, email, names or profiles.
+            if (matches.Count == 1)
+            {
+                return matches[0];
+            }
+
+            var user = new User
+            {
+                Id = id,
+                OktaUserId = $"{placeholderPrefix}-{id:D}",
+                Email = email,
+                FirstName = firstName,
+                LastName = lastName,
+                Role = role
+            };
+            dbContext.Users.Add(user);
+            return user;
+        }
+
+        async Task<CandidateProfile> EnsureCandidateAsync(string key, string email,
+            string firstName, string lastName, string targetRole, ExperienceLevel level,
+            string placeholderPrefix = "demo")
+        {
+            var user = await EnsureUserAsync(key, email, firstName, lastName,
+                UserRole.Candidate, placeholderPrefix);
+            if (user.CandidateProfile is not null)
+            {
+                return user.CandidateProfile;
+            }
+
+            var profile = new CandidateProfile
+            {
+                Id = StableId($"candidate/{key}"),
+                UserId = user.Id,
+                User = user,
+                TargetRole = targetRole,
+                ExperienceLevel = level
+            };
+            user.CandidateProfile = profile;
+            dbContext.CandidateProfiles.Add(profile);
+            return profile;
+        }
+
+        async Task<Interview> EnsureInterviewAsync(string key, Guid candidateId,
+            Guid interviewerId, string title, InterviewType type, ExperienceLevel level,
+            DateTime scheduledAt, int durationMinutes, string topics, InterviewStatus status)
+        {
+            var id = StableId($"interview/{key}");
+            // Recognize records created by the old random-ID seeder using its explicit
+            // demo marker, participants and title. Do not adopt ordinary interviews.
+            var matches = await dbContext.Interviews
+                .Where(x => x.Id == id ||
+                    (x.CandidateId == candidateId && x.InterviewerId == interviewerId &&
+                     x.Title == title && x.Notes == DemoNotes))
+                .ToListAsync(cancellationToken);
+
+            if (matches.Count > 1)
+            {
+                throw new InvalidOperationException($"Ambiguous demo interview for seed key '{key}'.");
+            }
+
+            if (matches.Count == 1)
+            {
+                var existing = matches[0];
+                if (existing.CandidateId != candidateId || existing.InterviewerId != interviewerId)
+                {
+                    throw new InvalidOperationException($"Conflicting demo interview participants for seed key '{key}'.");
+                }
+                return existing;
+            }
+
+            var interview = new Interview
+            {
+                Id = id,
+                CandidateId = candidateId,
+                InterviewerId = interviewerId,
+                Title = title,
+                Type = type,
+                Level = level,
+                ScheduledAt = scheduledAt,
+                DurationMinutes = durationMinutes,
+                Topics = topics,
+                Notes = DemoNotes,
+                Status = status
+            };
+            dbContext.Interviews.Add(interview);
+            return interview;
+        }
     }
 
-    private static Interview CreateInterview(
-        Guid candidateId,
-        Guid interviewerId,
-        string title,
-        InterviewType type,
-        ExperienceLevel level,
-        DateTime scheduledAt,
-        int durationMinutes,
-        string topics,
-        InterviewStatus status)
+    private static Guid StableId(string key)
     {
-        return new Interview
-        {
-            Id = Guid.NewGuid(),
-            CandidateId = candidateId,
-            InterviewerId = interviewerId,
-            Title = title,
-            Type = type,
-            Level = level,
-            ScheduledAt = scheduledAt,
-            DurationMinutes = durationMinutes,
-            Topics = topics,
-            Notes = "Development demo data.",
-            Status = status
-        };
+        // Fixed namespace and keys keep seed identities stable across machines and runs.
+        var hash = SHA256.HashData(Encoding.UTF8.GetBytes($"InterviewPractice.DevelopmentData/{key}"));
+        return new Guid(hash.AsSpan(0, 16));
     }
 
     private static Feedback CreateFeedback(
@@ -438,7 +364,7 @@ public static class DevelopmentDataSeeder
     {
         return new Feedback
         {
-            Id = Guid.NewGuid(),
+            Id = StableId($"feedback/{interviewId:D}"),
             InterviewId = interviewId,
             OverallScore = overallScore,
             Strengths = strengths,

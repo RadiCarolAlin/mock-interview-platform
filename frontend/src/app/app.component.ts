@@ -1,3 +1,4 @@
+import { AuthService } from './core/services/auth.service';
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
@@ -8,5 +9,8 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
+  constructor(public readonly auth: AuthService) {}
+
+  retry(): void { window.location.reload(); }
 }
 

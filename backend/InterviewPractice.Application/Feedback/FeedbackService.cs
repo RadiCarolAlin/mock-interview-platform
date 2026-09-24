@@ -1,3 +1,4 @@
+using InterviewPractice.Application.Common.Exceptions;
 using InterviewPractice.Application.Common.Interfaces;
 using InterviewPractice.Application.Feedback.Dtos;
 using InterviewPractice.Domain.Enums;
@@ -47,13 +48,13 @@ public class FeedbackService : IFeedbackService
 
         if (interview is null)
         {
-            throw new InvalidOperationException(
+            throw new ResourceNotFoundException(
                 "Interview does not exist.");
         }
 
         if (interview.Status != InterviewStatus.Completed)
         {
-            throw new InvalidOperationException(
+            throw new BusinessConflictException(
                 "Feedback can only be added to a completed interview.");
         }
 
@@ -64,7 +65,7 @@ public class FeedbackService : IFeedbackService
 
         if (feedbackExists)
         {
-            throw new InvalidOperationException(
+            throw new BusinessConflictException(
                 "Feedback already exists for this interview.");
         }
 

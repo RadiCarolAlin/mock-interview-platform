@@ -1,11 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+using InterviewPractice.Application.Common.Validation;
 using System.Security.Claims;
 using InterviewPractice.Application.Interviews;
 using InterviewPractice.Application.Interviews.Dtos;
 using InterviewPractice.Domain.Enums;
-using InterviewPractice.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace InterviewPractice.Api.Controllers;
 
@@ -15,20 +15,16 @@ namespace InterviewPractice.Api.Controllers;
 public class InterviewsController : ControllerBase
 {
     private readonly IInterviewService _interviewService;
-    private readonly ApplicationDbContext _dbContext;
 
-    public InterviewsController(
-        IInterviewService interviewService,
-        ApplicationDbContext dbContext)
+    public InterviewsController(IInterviewService interviewService)
     {
         _interviewService = interviewService;
-        _dbContext = dbContext;
     }
 
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<InterviewDto>>> GetAll(
         [FromQuery] string? search,
-        [FromQuery] InterviewStatus? status,
+        [FromQuery, EnumDataType(typeof(InterviewStatus))] InterviewStatus? status,
         CancellationToken cancellationToken)
     {
         var interviews = await _interviewService.GetAllAsync(
@@ -41,7 +37,7 @@ public class InterviewsController : ControllerBase
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<InterviewDetailsDto>> GetById(
-        Guid id,
+        [NonEmptyGuid] Guid id,
         CancellationToken cancellationToken)
     {
         var interview = await _interviewService.GetByIdAsync(
@@ -69,21 +65,15 @@ public class InterviewsController : ControllerBase
             return Unauthorized();
         }
 
-        var interviewerId = await _dbContext.InterviewerProfiles
-            .AsNoTracking()
-            .Where(x => x.User.OktaUserId == oktaUserId)
-            .Select(x => (Guid?)x.Id)
-            .FirstOrDefaultAsync(cancellationToken);
+        var interview = await _interviewService.CreateForUserAsync(
+            request,
+            oktaUserId,
+            cancellationToken);
 
-        if (interviewerId is null)
+        if (interview is null)
         {
             return Forbid();
         }
-
-        var interview = await _interviewService.CreateAsync(
-            request,
-            interviewerId.Value,
-            cancellationToken);
 
         return CreatedAtAction(
             nameof(GetById),
@@ -93,7 +83,7 @@ public class InterviewsController : ControllerBase
 
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(
-        Guid id,
+        [NonEmptyGuid] Guid id,
         UpdateInterviewRequest request,
         CancellationToken cancellationToken)
     {
@@ -112,7 +102,7 @@ public class InterviewsController : ControllerBase
 
     [HttpPatch("{id:guid}/complete")]
     public async Task<IActionResult> Complete(
-        Guid id,
+        [NonEmptyGuid] Guid id,
         CancellationToken cancellationToken)
     {
         var completed = await _interviewService.CompleteAsync(

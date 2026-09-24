@@ -1,0 +1,287 @@
+<section class="interview-form-page">
+
+  <a
+    class="back-link"
+    routerLink="/interviews">
+    ← Back to Interviews
+  </a>
+
+  <div class="page-header">
+    <h1>
+      {{ isEditMode ? 'Edit Interview' : 'Create Interview' }}
+    </h1>
+
+    <p>
+      {{
+        isEditMode
+          ? 'Update the interview session details.'
+          : 'Schedule a new technical interview practice session.'
+      }}
+    </p>
+  </div>
+
+  @if (loading) {
+
+    <div class="form-card">
+      Loading interview...
+    </div>
+
+  } @else if (loadError) {
+    <div class="form-card" role="alert">{{ loadError }}</div>
+  } @else {
+
+    <form
+      class="form-card"
+      [formGroup]="interviewForm"
+      (ngSubmit)="submit()">
+
+      <div class="section-header">
+        <h2>Interview Details</h2>
+
+        <p>
+          Enter the information for the interview session.
+        </p>
+      </div>
+
+      @if (submitError) {
+        <div class="validation-error">
+          {{ submitError }}
+        </div>
+      }
+
+      <div class="form-group full-width">
+
+        <label for="candidate">
+          Candidate <span>*</span>
+        </label>
+
+        <select
+          id="candidate"
+          formControlName="candidateId">
+
+          <option value="">
+            Select candidate...
+          </option>
+
+          @for (
+              candidate of candidates;
+            track candidate.id
+            ) {
+            <option [value]="candidate.id">
+              {{ candidate.firstName }}
+              {{ candidate.lastName }}
+            </option>
+          }
+
+        </select>
+        @if (fieldError(interviewForm.controls.candidateId)) {
+          <small class="validation-error">{{ fieldError(interviewForm.controls.candidateId) }}</small>
+        }
+
+      </div>
+
+      <div class="form-group full-width">
+
+        <label for="title">
+          Interview Title <span>*</span>
+        </label>
+
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          placeholder="e.g. Senior .NET Technical Interview">
+        @if (fieldError(interviewForm.controls.title)) {
+          <small class="validation-error">{{ fieldError(interviewForm.controls.title) }}</small>
+        }
+
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label for="type">
+            Interview Type <span>*</span>
+          </label>
+
+          <select
+            id="type"
+            formControlName="type">
+
+            @for (
+                type of interviewTypes;
+              track type.value
+              ) {
+              <option [ngValue]="type.value">
+                {{ type.label }}
+              </option>
+            }
+
+          </select>
+        @if (fieldError(interviewForm.controls.type)) {
+          <small class="validation-error">{{ fieldError(interviewForm.controls.type) }}</small>
+        }
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="level">
+            Level <span>*</span>
+          </label>
+
+          <select
+            id="level"
+            formControlName="level">
+
+            @for (
+                level of levels;
+              track level.value
+              ) {
+              <option [ngValue]="level.value">
+                {{ level.label }}
+              </option>
+            }
+
+          </select>
+        @if (fieldError(interviewForm.controls.level)) {
+          <small class="validation-error">{{ fieldError(interviewForm.controls.level) }}</small>
+        }
+
+        </div>
+
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-group">
+
+          <label for="date">
+            Date <span>*</span>
+          </label>
+
+          <input
+            id="date"
+            type="date"
+            formControlName="date">
+        @if (fieldError(interviewForm.controls.date)) {
+          <small class="validation-error">{{ fieldError(interviewForm.controls.date) }}</small>
+        }
+
+        </div>
+
+        <div class="form-group">
+
+          <label for="time">
+            Time <span>*</span>
+          </label>
+
+          <input
+            id="time"
+            type="time"
+            formControlName="time">
+        @if (fieldError(interviewForm.controls.time)) {
+          <small class="validation-error">{{ fieldError(interviewForm.controls.time) }}</small>
+        }
+
+        </div>
+
+      </div>
+
+      <div class="form-group duration">
+
+        <label for="duration">
+          Duration
+        </label>
+
+        <div class="duration-input">
+
+          <input
+            id="duration"
+            type="number"
+            formControlName="durationMinutes">
+
+          <span>minutes</span>
+
+        </div>
+        @if (fieldError(interviewForm.controls.durationMinutes)) {
+          <small class="validation-error">{{ fieldError(interviewForm.controls.durationMinutes) }}</small>
+        }
+
+      </div>
+
+      <div class="form-group full-width">
+
+        <label for="topics">
+          Topics / Focus Areas
+        </label>
+
+        <input
+          id="topics"
+          type="text"
+          formControlName="topics"
+          placeholder="e.g. C#, .NET, SQL, System Design">
+        @if (fieldError(interviewForm.controls.topics)) {
+          <small class="validation-error">{{ fieldError(interviewForm.controls.topics) }}</small>
+        }
+
+        <small class="hint">
+          Separate multiple topics with commas.
+        </small>
+
+      </div>
+
+      <div class="form-group full-width">
+
+        <label for="notes">
+          Notes
+        </label>
+
+        <textarea
+          id="notes"
+          rows="5"
+          formControlName="notes"
+          placeholder="Add any preparation notes or areas to focus on...">
+        </textarea>
+        @if (fieldError(interviewForm.controls.notes)) {
+          <small class="validation-error">{{ fieldError(interviewForm.controls.notes) }}</small>
+        }
+
+      </div>
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="secondary-button"
+          [disabled]="submitting"
+          (click)="cancel()">
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="submitting">
+
+          @if (submitting) {
+            Saving...
+          } @else {
+            {{
+              isEditMode
+                ? 'Save Changes'
+                : 'Create Interview'
+            }}
+          }
+
+        </button>
+
+      </div>
+
+    </form>
+
+  }
+
+</section>
+

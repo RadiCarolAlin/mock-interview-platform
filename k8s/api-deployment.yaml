@@ -71,9 +71,9 @@ spec:
             - name: Okta__ClientId
               value: "0oa17xk6m0iFgRjLX698"
 
-            # Populate Cloud SQL with our assessment demo data.
+            # Demo data must not be seeded during production API startup.
             - name: SeedDemoData
-              value: "true"
+              value: "false"
 
           resources:
             requests:

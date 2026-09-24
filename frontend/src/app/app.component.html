@@ -1,2 +1,8 @@
+@if (auth.accessError()) {
+  <div role="alert" class="access-error">
+    <p>{{ auth.accessError() }}</p>
+    <button type="button" (click)="retry()">Try again</button>
+  </div>
+}
 <router-outlet></router-outlet>
 

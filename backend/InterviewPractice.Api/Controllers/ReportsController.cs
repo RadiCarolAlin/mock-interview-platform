@@ -1,3 +1,4 @@
+using InterviewPractice.Application.Common.Validation;
 using InterviewPractice.Application.Reports;
 using InterviewPractice.Application.Reports.Dtos;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +30,7 @@ public class ReportsController : ControllerBase
 
     [HttpGet("candidates/{candidateId:guid}/progress")]
     public async Task<ActionResult<CandidateProgressDto>> GetCandidateProgress(
-        Guid candidateId,
+        [NonEmptyGuid] Guid candidateId,
         CancellationToken cancellationToken)
     {
         var progress = await _reportService.GetCandidateProgressAsync(

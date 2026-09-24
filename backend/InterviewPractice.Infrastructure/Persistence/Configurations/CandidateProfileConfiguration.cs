@@ -8,7 +8,9 @@ public class CandidateProfileConfiguration : IEntityTypeConfiguration<CandidateP
 {
     public void Configure(EntityTypeBuilder<CandidateProfile> builder)
     {
-        builder.ToTable("CandidateProfiles");
+        builder.ToTable("CandidateProfiles", table =>
+            table.HasCheckConstraint("CK_CandidateProfiles_ExperienceLevel",
+                "\"ExperienceLevel\" IN (1, 2, 3, 4)"));
 
         builder.HasKey(x => x.Id);
 

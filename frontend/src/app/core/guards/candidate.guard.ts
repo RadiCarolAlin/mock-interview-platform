@@ -22,8 +22,8 @@ export const candidateGuard: CanActivateFn = () => {
         ? true
         : router.createUrlTree(['/dashboard']);
     }),
-    catchError(() => {
-      authService.login();
+    catchError(error => {
+      authService.handleAccessError(error);
       return of(false);
     })
   );

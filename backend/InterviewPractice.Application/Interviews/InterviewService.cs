@@ -1,3 +1,4 @@
+using InterviewPractice.Application.Common.Exceptions;
 using InterviewPractice.Application.Common.Interfaces;
 using InterviewPractice.Application.Interviews.Dtos;
 using InterviewPractice.Domain.Entities;
@@ -13,6 +14,60 @@ public class InterviewService : IInterviewService
     public InterviewService(IApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
+    }
+
+    public async Task<CandidateInterviewDetailsDto?> GetCandidateInterviewAsync(
+        Guid interviewId,
+        Guid candidateId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Interviews
+            .AsNoTracking()
+            .Where(x => x.Id == interviewId && x.CandidateId == candidateId)
+            .Select(x => new CandidateInterviewDetailsDto
+            {
+                Id = x.Id,
+                Title = x.Title,
+                Interviewer = x.Interviewer.User.FirstName + " " +
+                    x.Interviewer.User.LastName,
+                Type = x.Type,
+                Level = x.Level,
+                ScheduledAt = x.ScheduledAt,
+                DurationMinutes = x.DurationMinutes,
+                Topics = x.Topics,
+                Notes = x.Notes,
+                Status = x.Status,
+                Feedback = x.Feedback == null
+                    ? null
+                    : new CandidateInterviewFeedbackDto
+                    {
+                        OverallScore = x.Feedback.OverallScore,
+                        Outcome = x.Feedback.Outcome,
+                        Strengths = x.Feedback.Strengths,
+                        ImprovementAreas = x.Feedback.ImprovementAreas,
+                        AdditionalComments = x.Feedback.AdditionalComments
+                    }
+            })
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<InterviewDetailsDto?> CreateForUserAsync(
+        CreateInterviewRequest request,
+        string oktaUserId,
+        CancellationToken cancellationToken = default)
+    {
+        var interviewerId = await _dbContext.InterviewerProfiles
+            .AsNoTracking()
+            .Where(x => x.User.OktaUserId == oktaUserId)
+            .Select(x => (Guid?)x.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (interviewerId is null)
+        {
+            return null;
+        }
+
+        return await CreateAsync(request, interviewerId.Value, cancellationToken);
     }
 
     public async Task<IReadOnlyList<InterviewDto>> GetAllAsync(
@@ -115,7 +170,7 @@ public class InterviewService : IInterviewService
 
         if (!candidateExists)
         {
-            throw new InvalidOperationException(
+            throw new ResourceNotFoundException(
                 "Candidate does not exist.");
         }
 
@@ -126,7 +181,7 @@ public class InterviewService : IInterviewService
 
         if (!interviewerExists)
         {
-            throw new InvalidOperationException(
+            throw new ResourceNotFoundException(
                 "Interviewer does not exist.");
         }
 
@@ -171,7 +226,7 @@ public class InterviewService : IInterviewService
 
         if (interview.Status == InterviewStatus.Completed)
         {
-            throw new InvalidOperationException(
+            throw new BusinessConflictException(
                 "A completed interview cannot be modified.");
         }
 
@@ -205,6 +260,11 @@ public class InterviewService : IInterviewService
         if (interview.Status == InterviewStatus.Completed)
         {
             return true;
+        }
+
+        if (interview.Status == InterviewStatus.Cancelled)
+        {
+            throw new BusinessConflictException("A cancelled interview cannot be completed.");
         }
 
         interview.Status = InterviewStatus.Completed;

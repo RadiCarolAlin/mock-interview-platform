@@ -4,6 +4,10 @@ namespace InterviewPractice.Application.Candidates;
 
 public interface ICandidateService
 {
+    Task<Guid?> GetProfileIdByOktaUserIdAsync(
+        string? oktaUserId,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<CandidateDto>> GetAllAsync(
         string? search = null,
         CancellationToken cancellationToken = default);

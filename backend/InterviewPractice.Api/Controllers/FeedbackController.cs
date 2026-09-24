@@ -1,3 +1,4 @@
+using InterviewPractice.Application.Common.Validation;
 using InterviewPractice.Application.Feedback;
 using InterviewPractice.Application.Feedback.Dtos;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +20,7 @@ public class FeedbackController : ControllerBase
 
     [HttpGet("interview/{interviewId:guid}")]
     public async Task<ActionResult<FeedbackDto>> GetByInterviewId(
-        Guid interviewId,
+        [NonEmptyGuid] Guid interviewId,
         CancellationToken cancellationToken)
     {
         var feedback = await _feedbackService.GetByInterviewIdAsync(
